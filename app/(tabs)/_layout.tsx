@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
+import * as React from "react"; 
 import {
   Modal,
   View,
@@ -86,7 +87,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="(home)"
           options={{
-            tabBarLabel: () => null,
+            tabBarLabel: '홈',
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="home"
@@ -97,9 +98,22 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="learn/index"
+          options={{
+            tabBarLabel: "학습",
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="book-outline"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="search"
           options={{
-            tabBarLabel: () => null,
+            tabBarLabel: "게임",
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="search"
@@ -109,6 +123,7 @@ export default function TabLayout() {
             ),
           }}
         />
+     
         <Tabs.Screen
           name="add"
           listeners={{

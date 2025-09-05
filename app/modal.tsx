@@ -11,6 +11,7 @@ import {
   Pressable,
   Linking,
   Alert,
+
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
@@ -38,7 +39,7 @@ export function ListFooter({
     <View style={styles.listFooter}>
       <View style={styles.listFooterAvatar}>
         <Image
-          source={require("../assets/images/avatar.png")}
+          source={require("@/assets/images/avatar.png")}
           style={styles.avatarSmall}
         />
       </View>
@@ -109,7 +110,7 @@ export default function Modal() {
       return;
     }
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "livePhotos", "videos"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 수정
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
@@ -146,7 +147,7 @@ export default function Modal() {
       return;
     }
     let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images", "livePhotos", "videos"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 수정
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
@@ -236,7 +237,7 @@ export default function Modal() {
     <View style={styles.threadContainer}>
       <View style={styles.avatarContainer}>
         <Image
-          source={require("../assets/images/avatar.png")}
+          source={require("@/assets/images/avatar.png")}
           style={styles.avatar}
         />
         <View style={styles.threadLine} />

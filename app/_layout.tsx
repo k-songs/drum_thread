@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack } from "expo-router";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState,useMemo } from "react";
 import { Alert } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
@@ -65,9 +65,9 @@ export default function RootLayout() {
     });
      /* TOD: validating access token */
   }, []);
-
+ const contextValue = useMemo(() => ({ user, login, logout }), [user, login, logout]);
   return (
-    <AuthContext value={{ user, login, logout }}>
+    <AuthContext value={contextValue}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />

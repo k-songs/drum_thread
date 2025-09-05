@@ -7,7 +7,7 @@ declare global {
     server: Server;
   }
 }
-
+// Mirage.js를 사용한 개발용 가짜 API 서버
 if (__DEV__) {
   if (window.server) {
     window.server.shutdown();
@@ -15,6 +15,7 @@ if (__DEV__) {
 
   window.server = createServer({
     routes() {
+      // Mirage.js를 사용한 개발용 가짜 API 서버
       this.post("/login", (schema, request) => {
         const { username, password } = JSON.parse(request.requestBody);
 

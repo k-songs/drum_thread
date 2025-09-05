@@ -1,16 +1,33 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View, StyleSheet, TextInput } from "react-native";
+import { Pressable, Text, View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AuthContext } from "../_layout";
-import SideMenu from "@/components/SideMenu";
+import {
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  StatusBar
+} from 'react-native';
+import TempDrumGame from '../../components/TempDrumGame'; // 경로 수정
+import { DIFFICULTY_LEVELS } from '../../constants/drumSounds'; // 경로 수정
 
-export default function Index() {
+export default function Search() {
   const insets = useSafeAreaInsets();
   const { user } = useContext(AuthContext);
   const isLoggedIn = !!user;
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [currentDifficulty, setCurrentDifficulty] = useState('beginner');
+
+  const handleGameComplete = (score: number, maxScore: number, percentage: number) => {
+    Alert.alert(
+      '게임 완료!',
+      `점수: ${score}/${maxScore} (${percentage}%)`,
+      [
+        { text: '다시 하기', onPress: () => setCurrentDifficulty(currentDifficulty) },
+        { text: '확인' }
+      ]
+    );
+  };
 
   return (
     <View
@@ -20,29 +37,37 @@ export default function Index() {
       ]}
     >
       <View style={styles.header}>
-        {isLoggedIn && (
-          <Pressable
-            style={styles.menuButton}
-            onPress={() => {
-              setIsSideMenuOpen(true);
-            }}
+        <Text style={styles.title}>드럼 게임</Text>
+        
+        {/* 난이도 선택 버튼 */}
+        <View style={styles.difficultyContainer}>
+          <TouchableOpacity
+            style={[
+              styles.difficultyButton,
+              currentDifficulty === 'beginner' && styles.activeDifficulty
+            ]}
+            onPress={() => setCurrentDifficulty('beginner')}
           >
-            <Ionicons name="menu" size={24} color="black" />
-          </Pressable>
-        )}
-        <SideMenu
-          isVisible={isSideMenuOpen}
-          onClose={() => setIsSideMenuOpen(false)}
-        />
+            <Text style={styles.difficultyText}>초급</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.difficultyButton,
+              currentDifficulty === 'intermediate' && styles.activeDifficulty
+            ]}
+            onPress={() => setCurrentDifficulty('intermediate')}
+          >
+            <Text style={styles.difficultyText}>중급</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
+
+      {/* 드럼 게임 컴포넌트 */}
+      <TempDrumGame
+        difficulty={currentDifficulty}
+        onGameComplete={handleGameComplete}
+      />
     </View>
   );
 }
@@ -50,28 +75,37 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    height: 50,
+    padding: 20,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  menuButton: {
-    position: "absolute",
-    left: 20,
-    top: 10,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+    color: '#333',
   },
-  searchBar: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  difficultyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
   },
-  searchInput: {
-    width: "90%",
-    height: 40,
-    borderWidth: 1,
-    borderColor: "gray",
+  difficultyButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: 20,
-    paddingHorizontal: 10,
+    backgroundColor: '#e0e0e0',
+  },
+  activeDifficulty: {
+    backgroundColor: '#4CAF50',
+  },
+  difficultyText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
