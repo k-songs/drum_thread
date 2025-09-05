@@ -13,12 +13,8 @@ import {
 } from "react-native";
 import { AuthContext } from "../_layout";
 
-const AnimatedTabBarButton = ({
-  children,
-  onPress,
-  style,
-  ...restProps
-}: BottomTabBarButtonProps) => {
+const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
+  const { children, onPress, style, ...restProps } = props;
   const scaleValue = useRef(new Animated.Value(1)).current;
 
   const handlePressOut = () => {
@@ -38,14 +34,12 @@ const AnimatedTabBarButton = ({
 
   return (
     <Pressable
-      {...restProps}
       onPress={onPress}
       onPressOut={handlePressOut}
       style={[
         { flex: 1, justifyContent: "center", alignItems: "center" },
         style,
       ]}
-      // Disable Android ripple effect
       android_ripple={{ borderless: false, radius: 0 }}
     >
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
@@ -81,7 +75,7 @@ export default function TabLayout() {
         backBehavior="history"
         screenOptions={{
           headerShown: false,
-          tabBarButton: (props) => <AnimatedTabBarButton {...props} />,
+          tabBarButton: (props: BottomTabBarButtonProps) => <AnimatedTabBarButton {...props} />,
         }}
       >
         <Tabs.Screen
