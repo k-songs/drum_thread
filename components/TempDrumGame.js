@@ -1,5 +1,5 @@
 // components/TempDrumGame.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Animated, // Animated import
+  PanResponder, // PanResponder import
 } from "react-native";
 import { Audio } from "expo-av";
 import {
@@ -23,6 +25,12 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+
+  // 토글 스위치 애니메이션을 위한 값
+
+  // PanResponder 설정
 
   const currentDifficulty = DIFFICULTY_LEVELS[difficulty];
   const availableInstruments = currentDifficulty.instruments;
@@ -39,6 +47,10 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
       }
     };
   }, []);
+
+  // 새로운 라운드 시작 시 자동 재생 여부 확인 및 카운트다운 시작
+
+  // 카운트다운 로직
 
   const setupAudio = async () => {
     try {
@@ -132,45 +144,31 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
     }
 
     const isCorrect = selectedInstrument === currentInstrument;
-    const correctDrum = DRUM_INFO[currentInstrument];
-    const selectedDrum = DRUM_INFO[selectedInstrument];
 
     console.log('Answer result:', isCorrect ? 'Correct' : 'Wrong'); // 디버깅용
 
+    let newScore = score;
     if (isCorrect) {
-      setScore(score + 1);
-      // 기존: if (confirm(`정답! 🎉\n맞았습니다! ${correctDrum.name}\n\n다음 문제로 가시겠습니까?`)) {
-      Alert.alert(
-        "정답! 🎉",
-        `맞았습니다! ${correctDrum.name}\n\n다음 문제로 가시겠습니까?`,
-        [
-          { text: "취소", style: "cancel" },
-          { text: "확인", onPress: nextRound },
-        ]
-      );
+      newScore = score + 1;
+      setScore(newScore);
+      setFeedbackMessage('정답! 🎉 잘하셨습니다!');
+      setShowFeedback(true);
     } else {
-  
-      Alert.alert(
-        "오답 😅",
-        `정답: ${correctDrum.name}\n선택: ${selectedDrum.name}\n\n다음 문제로 가시겠습니까?`,
-        [
-          { text: "취소", style: "cancel" },
-          { text: "확인", onPress: nextRound },
-        ]
-      );
+      setFeedbackMessage(`오답! 정답은 "${DRUM_INFO[currentInstrument].name}"입니다.`);
+      setShowFeedback(true);
     }
-  
-  };
-
-  const nextRound = () => {
-    if (round >= maxRounds) {
-      // 게임 완료
-      const percentage = Math.round((score / maxRounds) * 100);
-      onGameComplete?.(score, maxRounds, percentage);
-    } else {
-      setRound(round + 1);
-      startNewRound();
-    }
+ 
+    setGameState('waitingForNextRound');
+ 
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (round >= maxRounds) {
+        onGameComplete?.(newScore, maxRounds, Math.round((newScore / maxRounds) * 100));
+      } else {
+        setRound(prevRound => prevRound + 1);
+        startNewRound();
+      }
+    }, 1000);
   };
 
   const resetGame = () => {
@@ -183,7 +181,7 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>드럼 소리 맞히기</Text>
-        <Text style={styles.difficulty}>
+        <Text style={styles.difficulty}>  
           {currentDifficulty.name} - {currentDifficulty.description}
         </Text>
       </View>
@@ -198,6 +196,19 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
       </View>
 
       <View style={styles.gameArea}>
+        {/* 시작 버튼 (게임 시작 전 한 번만 터치) */}
+        {gameState === "ready" && !isPlaying && (
+          <TouchableOpacity
+            style={styles.startButton} // 새로운 스타일 적용
+            onPress={() => {
+              setGameState("playing"); // 즉시 게임 상태를 playing으로 변경
+              playSound();
+            }}
+          >
+            <Text style={styles.startButtonText}>게임 시작</Text>
+          </TouchableOpacity>
+        )}
+
         {/* 현재 악기 표시 (게임 상태에 따라) */}
         {currentInstrument && (
           <View style={styles.instrumentDisplay}>
@@ -206,7 +217,7 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
             </Text>
             {gameState === "ready" && (
               <Text style={styles.instructionText}>
-                🔊 재생 버튼을 눌러 소리를 들어보세요
+                게임 시작 버튼을 눌러 소리를 들어보세요
               </Text>
             )}
             {gameState === "playing" && (
@@ -222,23 +233,30 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
           </View>
         )}
 
+        {/* 피드백 메시지 표시 */}
+        {showFeedback && (
+          <View style={styles.feedbackContainer}>
+            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+          </View>
+        )}
+        
         {/* 재생 버튼 */}
-        <TouchableOpacity
-          style={[styles.playButton, isPlaying && styles.playButtonDisabled]}
-          onPress={playSound}
-          disabled={isPlaying || gameState === "answered"}
-        >
-          {isPlaying ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={styles.playButtonText}>
-              {gameState === "ready" ? "🔊 소리 재생" : "재생 완료"}
-            </Text>
-          )}
-        </TouchableOpacity>
+        {gameState === "playing" && !isPlaying && (
+          <TouchableOpacity
+            style={styles.playButton}
+            onPress={async () => {
+              if (sound) {
+                await sound.stopAsync(); // Stop current sound to play again
+              }
+              playSound();
+            }}
+          >
+            <Text style={styles.playButtonText}>🔊 다시 듣기</Text>
+          </TouchableOpacity>
+        )}
 
         {/* 선택지 */}
-        {gameState === "answered" && (
+        {gameState === "answered" && !showFeedback && (
           <View style={styles.choicesContainer}>
             <Text style={styles.choicesTitle}>답을 선택하세요:</Text>
             {choices.map((instrument, index) => (
@@ -412,6 +430,72 @@ const styles = StyleSheet.create({
     color: "#856404",
     textAlign: "center",
     lineHeight: 18,
+  },
+  feedbackContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    minHeight: 50,
+  },
+  feedbackText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    justifyContent: "space-between",
+  },
+  toggleLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  switchBackground: {
+    width: 50,
+    height: 25,
+    borderRadius: 12.5,
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  switchHandle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+  },
+  countdownContainer: {
+    backgroundColor: "#FF9800",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  countdownText: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  startButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  startButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 

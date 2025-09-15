@@ -39,7 +39,7 @@ export const DIFFICULTY_LEVELS = {
     name: '중급',
     instruments: ['kick', 'snare', 'hihat', 'cymbal'] as const,
     rounds: 10,
-    description: '4가지 악기 (전체)'
+    description: '4가지 악기 '
   }
 };
 

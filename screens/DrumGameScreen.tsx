@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -32,7 +33,7 @@ interface DrumGameScreenProps {
   onCorrectAnswer?: () => void;
 }
 
-type GameState = 'ready' | 'playing' | 'answered';
+type GameState = 'ready' | 'playing' | 'answered' | 'waitingForNextRound';
 
 // 타악기 데이터 정의
 const DRUM_INSTRUMENTS: DrumInstruments = {
@@ -67,6 +68,8 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
   const [gameState, setGameState] = useState<GameState>('ready');
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState<boolean>(false);
   
   const maxRounds = 10;
   const instrumentKeys = Object.keys(DRUM_INSTRUMENTS);
@@ -143,40 +146,29 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
 
     const isCorrect = selectedInstrument === currentInstrument;
     
+    let newScore = score;
     if (isCorrect) {
-      setScore(score + 1);
-      Alert.alert('정답!', '🎉 잘하셨습니다!', [
-        { 
-          text: '다음 문제', 
-          onPress: () => {
-            if (round >= maxRounds) {
-              onGameOver(score + 1, maxRounds);
-            } else {
-              setRound(round + 1);
-              startNewRound();
-            }
-          }
-        }
-      ]);
+      newScore = score + 1;
+      setScore(newScore);
+      setFeedbackMessage('정답! 🎉 잘하셨습니다!');
+      setShowFeedback(true);
+      onCorrectAnswer?.();
     } else {
-      Alert.alert(
-        '오답', 
-        `정답은 "${DRUM_INSTRUMENTS[currentInstrument!].name}"입니다.`, 
-        [
-          { 
-            text: '다음 문제', 
-            onPress: () => {
-              if (round >= maxRounds) {
-                onGameOver(score, maxRounds);
-              } else {
-                setRound(round + 1);
-                startNewRound();
-              }
-            }
-          }
-        ]
-      );
+      setFeedbackMessage(`오답! 정답은 "${DRUM_INSTRUMENTS[currentInstrument!].name}"입니다.`);
+      setShowFeedback(true);
     }
+ 
+    setGameState('waitingForNextRound');
+ 
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (round >= maxRounds) {
+        onGameOver(newScore, maxRounds);
+      } else {
+        setRound(prevRound => prevRound + 1);
+        startNewRound();
+      }
+    }, 1000); // 1초 지연
   };
 
   const resetGame = (): void => {
@@ -212,6 +204,13 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
             </View>
           )}
         </View>
+
+        {/* 피드백 메시지 표시 */}
+        {showFeedback && ( // showFeedback 상태에 따라 피드백 메시지를 조건부 렌더링
+          <View style={styles.feedbackContainer}>
+            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+          </View>
+        )}
 
         {/* 재생 버튼 */}
         <View style={styles.playButtonContainer}>
@@ -338,6 +337,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontFamily: 'open-sans-bold',
+  },
+  feedbackContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    minHeight: 50, // 메시지가 표시될 공간 확보
+  },
+  feedbackText: {
+    fontSize: 22,
+    fontFamily: 'open-sans-bold',
+    color: Colors.primary800, // 또는 적절한 색상
+    textAlign: 'center',
   },
 });
 

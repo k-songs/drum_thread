@@ -20,12 +20,7 @@ interface SideMenuProps {
 const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
 
 
-  const handleLogout = () => {
- 
-    onClose(); // Close the menu after logout
-    // Optionally navigate to login screen or home screen
-    // e.g., using router.replace('/login');
-  };
+
 
   // Use Modal for better presentation and handling outside clicks
   return (
@@ -65,9 +60,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
               <TouchableOpacity style={styles.menuItem}>
                 <Text style={styles.menuText}>Report a problem</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                <Text style={[styles.menuText, styles.logoutText]}>Log out</Text>
-              </TouchableOpacity>
+      
             </View>
           </SafeAreaView>
         </>
