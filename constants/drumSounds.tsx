@@ -1,32 +1,44 @@
-export const DRUM_SOUNDS = {
-  kick: require('@/assets/sounds/tom_z.mp3'),
-  snare: require('@/assets/sounds/snare_z.mp3'),
-  hihat: require('@/assets/sounds/hat_z.mp3'),
-  cymbal: require('@/assets/sounds/cymbal_z.mp3'),
-};
 
-export const DRUM_INFO = {
+/*  '🥁''🔔' '🎵'*/
+// constants/drumSounds.tsx 파일에서 이렇게 변경할 수 있습니다.
+
+// 각 드럼 악기에 대한 모든 정보를 포함하는 통합된 인터페이스
+export interface DrumInstrument {
+  name: string;
+  description: string;
+  sound: any; // 
+  lottie?: any; //
+
+}
+
+export const DRUM_INSTRUMENTS= {
   kick: {
     name: '킥드럼',
     description: '둔탁하고 깊은 저음',
-    emoji: '🥁'
+    sound: require('@/assets/sounds/tom_z.mp3'),
+    lottie: require('@/assets/lottie/effort.json'), // 예시 Lottie 파일
   },
   snare: {
     name: '스네어',
     description: '날카롭고 튀는 소리',
-    emoji: '🪘'
+    sound: require('@/assets/sounds/snare_z.mp3'),
+    lottie: require('@/assets/lottie/SadEmoji.json'), // 예시 Lottie 파일
   },
   hihat: {
     name: '하이햇',
     description: '짧고 선명한 금속음',
-    emoji: '🎵'
+    sound: require('@/assets/sounds/hat_z.mp3'),
+    lottie: require('@/assets/lottie/shilvermedal.json'), // 예시 Lottie 파일
   },
   cymbal: {
     name: '심벌',
     description: '긴 울림의 금속음',
-    emoji: '🔔'
-  }
-};
+    sound: require('@/assets/sounds/cymbal_z.mp3'),
+    lottie:  require('@/assets/lottie/shilvermedal.json') // 심벌에는 Lottie 애니메이션이 없을 수도 있습니다.
+  },
+}  as const satisfies Record<string, DrumInstrument>;
+
+
 
 export const DIFFICULTY_LEVELS = {
   beginner: {
@@ -37,11 +49,11 @@ export const DIFFICULTY_LEVELS = {
   },
   intermediate: {
     name: '중급',
-    instruments: ['kick', 'snare', 'hihat', 'cymbal'] as const,
+    instruments: ['kick', 'snare', 'hihat', 'cymbal'] as const ,
     rounds: 10,
     description: '4가지 악기 '
   }
 };
 
-export type InstrumentType = keyof typeof DRUM_SOUNDS;
+export type InstrumentType = keyof typeof DRUM_INSTRUMENTS;
 export type DifficultyType = keyof typeof DIFFICULTY_LEVELS;

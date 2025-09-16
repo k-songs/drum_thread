@@ -17,6 +17,17 @@ interface DrumGameOverScreenProps {
   onGoHome: () => void;
 }
 
+
+/* 2.5뇌
+confirm 
+alert로 바로 잡음  
+
+d-threa 자유롭게 깃에도 푸시함()초기
+킥드럼스네어 이미지그려넣기
+약 */
+
+
+
 interface GradeResult {
   grade: string;
   emoji: string; // 이모지 또는 null을 허용하도록 타입 변경

@@ -12,21 +12,35 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import {
-  DRUM_SOUNDS,
-  DRUM_INFO,
+  DRUM_INSTRUMENTS,
   DIFFICULTY_LEVELS,
+  InstrumentType,
+  DifficultyType,
 } from "../constants/drumSounds";
+import LottieView from "lottie-react-native";
 
+/**
+ * @typedef {'ready' | 'playing' | 'answered' | 'waitingForNextRound'} GameState
+ */
+
+/**
+ * @param {object} props
+ * @param {DifficultyType} [props.difficulty='beginner']
+ * @param {(score: number, maxScore: number, percentage: number) => void} [props.onGameComplete]
+ */
 function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
+  /** @type {InstrumentType | null} */
   const [currentInstrument, setCurrentInstrument] = useState(null);
+  /** @type {InstrumentType[]} */
   const [choices, setChoices] = useState([]);
+  /** @type {GameState} */
   const [gameState, setGameState] = useState("ready"); // ready, playing, answered
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // 토글 스위치 애니메이션을 위한 값
 
@@ -90,14 +104,14 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
   const playSound = async () => {
     try {
       setIsPlaying(true);
-      
+
       // 이전 사운드 정리
       if (sound) {
         await sound.unloadAsync();
       }
 
-      const soundSource = DRUM_SOUNDS[currentInstrument];
-      const drumInfo = DRUM_INFO[currentInstrument];
+      const soundSource = DRUM_INSTRUMENTS[currentInstrument].sound;
+      const drumInfo = DRUM_INSTRUMENTS[currentInstrument];
       console.log(`🔊 Playing ${drumInfo.name}: ${drumInfo.description}`);
 
       const { sound: newSound } = await Audio.Sound.createAsync(soundSource, {
@@ -110,23 +124,24 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
 
       // 웹 환경을 고려한 재생 완료 처리
       newSound.setOnPlaybackStatusUpdate((status) => {
-        console.log('Playback status:', status); // 디버깅용
+        console.log("Playback status:", status); // 디버깅용
         if (status.didJustFinish) {
           setIsPlaying(false);
           setGameState("answered");
-          console.log('Sound finished, gameState set to answered'); // 디버깅용
+          console.log("Sound finished, gameState set to answered"); // 디버깅용
         }
       });
 
       // 웹 환경 대비 타이머 백업 (3초 후 강제로 answered 상태로 변경)
       setTimeout(() => {
         if (gameState === "playing") {
-          console.log('Fallback: Setting gameState to answered after 3 seconds');
+          console.log(
+            "Fallback: Setting gameState to answered after 3 seconds"
+          );
           setIsPlaying(false);
           setGameState("answered");
         }
       }, 3000);
-
     } catch (error) {
       console.error("사운드 재생 오류:", error);
       setIsPlaying(false);
@@ -135,37 +150,48 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
     }
   };
 
-  const handleAnswer = (selectedInstrument) => {
-    console.log('handleAnswer called:', selectedInstrument, 'gameState:', gameState); // 디버깅용
-    
+  const handleAnswer = (/** @type {InstrumentType} */ selectedInstrument) => {
+    console.log(
+      "handleAnswer called:",
+      selectedInstrument,
+      "gameState:",
+      gameState
+    ); // 디버깅용
+
     if (gameState !== "answered") {
-      console.log('Game state is not answered, returning'); // 디버깅용
+      console.log("Game state is not answered, returning"); // 디버깅용
       return;
     }
 
     const isCorrect = selectedInstrument === currentInstrument;
 
-    console.log('Answer result:', isCorrect ? 'Correct' : 'Wrong'); // 디버깅용
+    console.log("Answer result:", isCorrect ? "Correct" : "Wrong"); // 디버깅용
 
     let newScore = score;
     if (isCorrect) {
       newScore = score + 1;
       setScore(newScore);
-      setFeedbackMessage('정답! 🎉 잘하셨습니다!');
+      setFeedbackMessage("정답! 🎉 잘하셨습니다!");
       setShowFeedback(true);
     } else {
-      setFeedbackMessage(`오답! 정답은 "${DRUM_INFO[currentInstrument].name}"입니다.`);
+      setFeedbackMessage(
+        `오답! 정답은 "${DRUM_INSTRUMENTS[currentInstrument].name}"입니다.`
+      );
       setShowFeedback(true);
     }
- 
-    setGameState('waitingForNextRound');
- 
+
+    setGameState("waitingForNextRound");
+
     setTimeout(() => {
       setShowFeedback(false);
       if (round >= maxRounds) {
-        onGameComplete?.(newScore, maxRounds, Math.round((newScore / maxRounds) * 100));
+        onGameComplete?.(
+          newScore,
+          maxRounds,
+          Math.round((newScore / maxRounds) * 100)
+        );
       } else {
-        setRound(prevRound => prevRound + 1);
+        setRound((prevRound) => prevRound + 1);
         startNewRound();
       }
     }, 1000);
@@ -181,7 +207,7 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>드럼 소리 맞히기</Text>
-        <Text style={styles.difficulty}>  
+        <Text style={styles.difficulty}>
           {currentDifficulty.name} - {currentDifficulty.description}
         </Text>
       </View>
@@ -212,9 +238,16 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
         {/* 현재 악기 표시 (게임 상태에 따라) */}
         {currentInstrument && (
           <View style={styles.instrumentDisplay}>
-            <Text style={styles.instrumentEmoji}>
-              {DRUM_INFO[currentInstrument].emoji}
-            </Text>
+            {DRUM_INSTRUMENTS[currentInstrument].lottie ? (
+              <LottieView
+                source={DRUM_INSTRUMENTS[currentInstrument].lottie}
+                autoPlay
+                loop
+                style={styles.instrumentLottieAnimation}
+              />
+            ) : (
+              <Text style={styles.placeholderText}>?</Text>
+            )}
             {gameState === "ready" && (
               <Text style={styles.instructionText}>
                 게임 시작 버튼을 눌러 소리를 들어보세요
@@ -239,7 +272,7 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
             <Text style={styles.feedbackText}>{feedbackMessage}</Text>
           </View>
         )}
-        
+
         {/* 재생 버튼 */}
         {gameState === "playing" && !isPlaying && (
           <TouchableOpacity
@@ -265,11 +298,19 @@ function TempDrumGame({ difficulty = "beginner", onGameComplete }) {
                 style={styles.choiceButton}
                 onPress={() => handleAnswer(instrument)}
               >
+                {DRUM_INSTRUMENTS[instrument].lottie ? (
+                  <LottieView
+                    source={DRUM_INSTRUMENTS[instrument].lottie}
+                    autoPlay
+                    loop
+                    style={styles.choiceLottie}
+                  />
+                ) : null}
                 <Text style={styles.choiceButtonText}>
-                  {DRUM_INFO[instrument].emoji} {DRUM_INFO[instrument].name}
+                  {DRUM_INSTRUMENTS[instrument].name}
                 </Text>
                 <Text style={styles.choiceDescription}>
-                  {DRUM_INFO[instrument].description}
+                  {DRUM_INSTRUMENTS[instrument].description}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -352,15 +393,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 30,
   },
-  instrumentEmoji: {
-    fontSize: 64,
-    marginBottom: 15,
+  instrumentLottieAnimation: {
+    width: 150,
+    height: 150,
   },
   instructionText: {
     fontSize: 16,
     textAlign: "center",
     color: "#666",
     fontStyle: "italic",
+  },
+  placeholderText: {
+    fontSize: 48,
+    marginBottom: 10,
   },
   playButton: {
     backgroundColor: "#4CAF50",
@@ -496,6 +541,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  choiceLottie: {
+    width: 50,
+    height: 50,
   },
 });
 

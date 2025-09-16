@@ -15,53 +15,19 @@ import Card from '../components/ui/Card';
 import InstructionText from '../components/ui/InstructionText';
 import PrimaryButton from '../components/ui/PrimaryButton';
 import Colors from '../constants/Colors';
-
-// 타입 정의
-interface DrumInstrument {
-  name: string;
-  sound: any;
-  lottie: any;
-}
-
-interface DrumInstruments {
-  [key: string]: DrumInstrument;
-}
+import { DRUM_INSTRUMENTS, InstrumentType, DifficultyType, DIFFICULTY_LEVELS } from '@/constants/drumSounds';
 
 interface DrumGameScreenProps {
-  difficulty?: number;
+  difficulty?: DifficultyType;
   onGameOver: (score: number, maxScore: number) => void;
   onCorrectAnswer?: () => void;
 }
 
 type GameState = 'ready' | 'playing' | 'answered' | 'waitingForNextRound';
 
-// 타악기 데이터 정의
-const DRUM_INSTRUMENTS: DrumInstruments = {
-  drum: { 
-    name: '드럼', 
-    sound: require('../assets/sounds/drum.mp3'),
-    lottie: require('../assets/lottie/drum-animation.json')
-  },
-  cymbal: { 
-    name: '심벌', 
-    sound: require('../assets/sounds/cymbal.mp3'),
-    lottie: require('../assets/lottie/cymbal-animation.json')
-  },
-  tambourine: { 
-    name: '탬버린', 
-    sound: require('../assets/sounds/tambourine.mp3'),
-    lottie: require('../assets/lottie/tambourine-animation.json')
-  },
-  triangle: { 
-    name: '트라이앵글', 
-    sound: require('../assets/sounds/triangle.mp3'),
-    lottie: require('../assets/lottie/triangle-animation.json')
-  }
-};
-
-function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGameScreenProps) {
-  const [currentInstrument, setCurrentInstrument] = useState<string | null>(null);
-  const [choices, setChoices] = useState<string[]>([]);
+function DrumGameScreen({ difficulty: selectedDifficulty = 'intermediate', onGameOver, onCorrectAnswer }: DrumGameScreenProps) {
+  const [currentInstrument, setCurrentInstrument] = useState<InstrumentType | null>(null);
+  const [choices, setChoices] = useState<InstrumentType[]>([]);
   const [score, setScore] = useState<number>(0);
   const [round, setRound] = useState<number>(1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -71,9 +37,9 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState<boolean>(false);
   
-  const maxRounds = 10;
-  const instrumentKeys = Object.keys(DRUM_INSTRUMENTS);
-  const availableInstruments = instrumentKeys.slice(0, difficulty);
+  const currentDifficulty = DIFFICULTY_LEVELS[selectedDifficulty];
+  const maxRounds = currentDifficulty.rounds;
+  const availableInstruments = currentDifficulty.instruments;
 
   useEffect(() => {
     startNewRound();
@@ -141,7 +107,7 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
     }
   };
 
-  const handleAnswer = async (selectedInstrument: string): Promise<void> => {
+  const handleAnswer = async (selectedInstrument: InstrumentType): Promise<void> => {
     if (gameState !== 'answered') return;
 
     const isCorrect = selectedInstrument === currentInstrument;
@@ -191,15 +157,22 @@ function DrumGameScreen({ difficulty = 4, onGameOver, onCorrectAnswer }: DrumGam
         {/* Lottie 애니메이션 영역 */}
         <View style={styles.animationContainer}>
           {showAnimation && currentInstrument ? (
-            <LottieView
-              source={DRUM_INSTRUMENTS[currentInstrument].lottie}
-              autoPlay
-              loop
-              style={styles.lottieAnimation}
-            />
+            DRUM_INSTRUMENTS[currentInstrument].lottie ? (
+              <LottieView
+                source={DRUM_INSTRUMENTS[currentInstrument].lottie}
+                autoPlay
+                loop
+                style={styles.lottieAnimation}
+              />
+            ) : ( // lottie가 없을 경우, emoji 없이 바로 기본 폴백
+              <View style={styles.placeholderAnimation}>
+                <Text style={styles.placeholderText}>?</Text> {/* Lottie가 없을 때 표시 */}
+                <InstructionText>재생 버튼을 눌러주세요</InstructionText>
+              </View>
+            )
           ) : (
             <View style={styles.placeholderAnimation}>
-              <Text style={styles.placeholderText}>🥁</Text>
+              <Text style={styles.placeholderText}>🥁</Text> {/* 기본 아이콘 */}
               <InstructionText>재생 버튼을 눌러주세요</InstructionText>
             </View>
           )}

@@ -3,7 +3,7 @@ import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
 import {  useRef  } from "react";
 import * as React from "react"; 
-import {  Animated, Pressable} from "react-native";
+import {  Animated, Pressable, Text} from "react-native";
 
 
 const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
@@ -58,7 +58,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="(home)"
           options={{
-            tabBarLabel: '홈',
+            tabBarLabel: ({ color }) => <Text style={{ color }}>홈</Text>,
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="home"
@@ -71,7 +71,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="learn/index"
           options={{
-            tabBarLabel: "학습",
+            tabBarLabel: ({ color }) => <Text style={{ color }}>학습</Text>,
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="book-outline"
@@ -84,7 +84,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="search"
           options={{
-            tabBarLabel: "게임",
+            tabBarLabel: ({ color }) => <Text style={{ color }}>게임</Text>,
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="search"

@@ -75,6 +75,7 @@ useEffect(() => {
       <MaterialTopTabs
         screenOptions={{
           lazy: true,
+          swipeEnabled: false, // 탭 스와이프 비활성화
           tabBarStyle: {
             backgroundColor: "white",
             boxShadow: "none",
@@ -94,11 +95,16 @@ useEffect(() => {
           },
         }}
       >
-        <MaterialTopTabs.Screen name="index" options={{ title: "For You" }} />
         <MaterialTopTabs.Screen
+          name="index"
+          options={{
+            tabBarLabel: ({ color }) => <Text style={{ color }}>For You</Text>,
+          }}
+        />
+        {/* <MaterialTopTabs.Screen
           name="following"
           options={{ title: "Following" }}
-        />
+        /> */}
       </MaterialTopTabs>
     </View>
   );
