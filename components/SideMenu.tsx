@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Modal,
+  Pressable, // Added Pressable import
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur"; // For background blur effect
@@ -35,9 +36,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
         { intensity: 10, tint: "light", style: styles.overlay },
         <>
           {/* Touchable overlay to close the menu when clicking outside */}
-          <TouchableOpacity
+          <Pressable // TouchableOpacity 대신 Pressable 사용
             style={styles.touchableOverlay}
-            activeOpacity={1}
             onPress={onClose}
           />
 
@@ -95,9 +95,10 @@ const styles = StyleSheet.create({
     borderRadius: 15, // Rounded corners like the screenshot
     paddingVertical: 5, // Reduced vertical padding
     paddingHorizontal: 0, // Padding handled by items
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.15)",
+   
     elevation: 8,
     overflow: "hidden", // Ensure content respects border radius
+    zIndex: 1,
   },
   menuContent: {
     paddingVertical: 10, // Inner padding for the content block

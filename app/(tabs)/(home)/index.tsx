@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useState, useEffect, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import SideMenu from "@/components/SideMenu";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { injectDummyLearningData, clearLearningData } from '@/utils/learningDataUtils';
 import { useFocusEffect } from '@react-navigation/native';
@@ -166,24 +165,16 @@ export default function Index() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}> {/* ScrollView로 감쌈 */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity
-          onPress={() => setIsSideMenuOpen(true)}
-          style={styles.menuButton}
-        >
-          <Ionicons name="menu" size={24} color="black" />
-        </TouchableOpacity>
+      <View style={[styles.header]}>
+        {/* 메뉴 버튼 제거 */}
         <Text>하이</Text>
         <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={24} color="orange" />
         </TouchableOpacity>
       </View>
 
-      {/* Side Menu */}
-      <SideMenu
-        isVisible={isSideMenuOpen}
-        onClose={() => setIsSideMenuOpen(false)}
-      />
+
+      
 
       <View style={styles.consecutiveLearningCard}>
         <View style={styles.consecutiveLearningLeft}>
@@ -242,7 +233,7 @@ export default function Index() {
 
       <View style={styles.vocabularyCard}>
         <View style={styles.vocabularyTextContainer}>
-          <Text style={styles.vocabularyTitle}>나의 영어 어휘력은 어느 정도일까?</Text>
+          <Text style={styles.vocabularyTitle}>나의 청능 어휘력은 어느 정도일까?</Text>
           <Text style={styles.vocabularySubtitle}>새로운 단어 19문제 더 풀고 알아보러 가기</Text>
         </View>
         <View style={styles.vocabularyGraphPlaceholder}>
@@ -284,7 +275,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   headerLogo: {
     width: 42, // DP, DIP
@@ -324,10 +315,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginHorizontal: 20,
     marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+
     elevation: 2,
   },
   consecutiveLearningLeft: {
@@ -353,10 +341,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 10,
     paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+
     elevation: 2,
   },
   weeklyProgressDay: {
@@ -383,10 +368,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginHorizontal: 20,
     marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+ 
     elevation: 2,
   },
   mainLearningHeader: {
@@ -454,10 +436,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+
     elevation: 2,
   },
   vocabularyTextContainer: {

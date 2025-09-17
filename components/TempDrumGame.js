@@ -362,10 +362,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: "center",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+
   },
   scoreText: {
     fontSize: 18,
@@ -384,10 +381,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     minHeight: 300,
     elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+
   },
   instrumentDisplay: {
     alignItems: "center",
@@ -511,10 +505,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
+
   },
   countdownContainer: {
     backgroundColor: "#FF9800",

@@ -19,27 +19,26 @@ import { BlurView } from "expo-blur";
 import { TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import * as React from "react";
-const { Navigator } = createMaterialTopTabNavigator();
+const TopTabs = createMaterialTopTabNavigator();
 
 
 
 
 export const MaterialTopTabs = withLayoutContext<
   MaterialTopTabNavigationOptions,
-  typeof Navigator,
+  typeof TopTabs.Navigator,
   TabNavigationState<ParamListBase>,
   MaterialTopTabNavigationEventMap
->(Navigator);
+>(TopTabs.Navigator);
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
 
-  
-// 앱 시작 시 한 번 실행
-useEffect(() => {
-}, []);
+  useEffect(() => {
+    console.log('SafeAreaInsets:', { top: insets.top, bottom: insets.bottom });
+  }, [insets]); // insets 객체가 변경될 때마다 로그 출력
 
 
   
@@ -52,7 +51,7 @@ useEffect(() => {
     >
       {React.createElement(
         BlurView as any,
-        { style: styles.header, intensity: 70 },
+        { style:  [styles.header, { paddingTop: insets.top }], intensity: 70 },
         <>
           <Pressable
             style={styles.menuButton}
@@ -62,22 +61,22 @@ useEffect(() => {
           >
             <Ionicons name="menu" size={24} color="black" />
           </Pressable>
-          <SideMenu
-            isVisible={isSideMenuOpen}
-            onClose={() => setIsSideMenuOpen(false)}
-          />
-          <Image
-            source={require("../../../assets/images/react-logo.png")}
-            style={styles.headerLogo}
-          /> 
+          {/* Image 컴포넌트 삭제 */}
         </>
       )}
+  
+      <SideMenu
+        isVisible={isSideMenuOpen}
+        onClose={() => setIsSideMenuOpen(false)}
+      />
       <MaterialTopTabs
         screenOptions={{
           lazy: true,
           swipeEnabled: false, // 탭 스와이프 비활성화
+         
+        
           tabBarStyle: {
-            backgroundColor: "white",
+            backgroundColor: "brown",
             boxShadow: "none",
             position: "relative",
           },
@@ -87,6 +86,7 @@ useEffect(() => {
             backgroundColor: "black",
             height: 1,
           },
+        
           tabBarIndicatorContainerStyle: {
             backgroundColor: "#aaa",
             position: "absolute",
@@ -95,20 +95,16 @@ useEffect(() => {
           },
         }}
       >
-        <MaterialTopTabs.Screen
-          name="index"
-          options={{
-            tabBarLabel: ({ color }) => <Text style={{ color }}>For You</Text>,
-          }}
-        />
-        {/* <MaterialTopTabs.Screen
-          name="following"
-          options={{ title: "Following" }}
-        /> */}
       </MaterialTopTabs>
     </View>
   );
 }
+
+
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -125,10 +121,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
   },
-  headerLogo: {
-    width: 32,
-    height: 32,
-  },
+
   loginButton: {
     padding: 8,
     backgroundColor: "black",
@@ -139,5 +132,12 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "white",
   },
+  headerLogo: {
+    position: "absolute",
+    right: 16,
+    width: 30,
+    height: 30,
+  },
+
 });
 

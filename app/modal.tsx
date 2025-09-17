@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
+import { Video } from "expo-av";
 
 interface Thread {
   id: string;
@@ -109,8 +110,10 @@ export default function Modal() {
       );
       return;
     }
+
+
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 수정
+      mediaTypes:["images","videos","livePhotos"],
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
@@ -146,8 +149,9 @@ export default function Modal() {
       );
       return;
     }
+
     let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 수정
+      mediaTypes: ["images","videos","livePhotos"],
       allowsMultipleSelection: true,
       selectionLimit: 5,
     });
@@ -325,6 +329,7 @@ export default function Modal() {
   );
 
   return (
+    
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Pressable onPress={handleCancel} disabled={isPosting}>
@@ -357,6 +362,8 @@ export default function Modal() {
         contentContainerStyle={{ backgroundColor: "#ddd" }}
         keyboardShouldPersistTaps="handled"
       />
+
+
 
       <RNModal
         transparent={true}
@@ -395,9 +402,9 @@ export default function Modal() {
             ))}
           </View>
         </Pressable>
-      </RNModal>
+      </RNModal> 
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable onPress={() => setIsDropdownVisible(true)}>
           <Text style={styles.footerText}>{replyOption} can reply & quote</Text>
         </Pressable>
@@ -409,7 +416,9 @@ export default function Modal() {
           <Text style={styles.postButtonText}>Post</Text>
         </Pressable>
       </View>
-    </View>
+    </View> 
+    
+
   );
 }
 
@@ -607,4 +616,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#8e8e93",
   },
+
 });
