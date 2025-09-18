@@ -5,7 +5,7 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { usePathname, useRouter } from "expo-router";
+import { usePathname, useRouter, useLocalSearchParams } from "expo-router";
 import NotFound from "@/app/+not-found";
 import { Ionicons } from "@expo/vector-icons";
 import SideMenu from "@/components/SideMenu";
@@ -17,6 +17,10 @@ export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const localSearchParams = useLocalSearchParams();
+
+  /*   const currentTab = localSearchParams.tabs; 
+console.log(currentTab,"currentTab") */
 
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 

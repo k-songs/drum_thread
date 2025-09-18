@@ -1,0 +1,148 @@
+import {
+  type MaterialTopTabNavigationEventMap,
+  type MaterialTopTabNavigationOptions,
+  createMaterialTopTabNavigator,
+} from "@react-navigation/material-top-tabs";
+import { Slot, withLayoutContext } from "expo-router";
+import type {
+  ParamListBase,
+  TabNavigationState,
+} from "@react-navigation/native";
+import { Pressable, View, Text,Image,StyleSheet } from "react-native";
+import { useState,useEffect ,useContext} from "react";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Ionicons } from "@expo/vector-icons";
+import SideMenu from "@/components/SideMenu";
+import { BlurView } from "expo-blur";
+import { TouchableOpacity } from "react-native";
+import { router } from "expo-router";
+import * as React from "react";
+const TopTabs = createMaterialTopTabNavigator();
+
+
+
+
+export const MaterialTopTabs = withLayoutContext<
+  MaterialTopTabNavigationOptions,
+  typeof TopTabs.Navigator,
+  TabNavigationState<ParamListBase>,
+  MaterialTopTabNavigationEventMap
+>(TopTabs.Navigator);
+
+export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+
+
+  useEffect(() => {
+    console.log('SafeAreaInsets:', { top: insets.top, bottom: insets.bottom });
+  }, [insets]); // insets 객체가 변경될 때마다 로그 출력
+
+
+  
+  return (
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
+      {React.createElement(
+        BlurView as any,
+        { style:  [styles.header, { paddingTop: insets.top }], intensity: 70 },
+        <>
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => {
+              setIsSideMenuOpen(true);
+            }}
+          >
+            <Ionicons name="menu" size={24} color="black" />
+          </Pressable>
+          {/* Image 컴포넌트 삭제 */}
+        </>
+      )}
+  
+      <SideMenu
+        isVisible={isSideMenuOpen}
+        onClose={() => setIsSideMenuOpen(false)}
+      />
+      <MaterialTopTabs
+        screenOptions={{
+          lazy: true,
+          swipeEnabled: false, // 탭 스와이프 비활성화
+         
+        
+          tabBarStyle: {
+            backgroundColor: "silver",
+            boxShadow: "none",
+            position: "relative",
+          },
+          tabBarPressColor: "transparent",
+          tabBarActiveTintColor: "#555",
+          tabBarIndicatorStyle: {
+            backgroundColor: "black",
+            height: 1,
+          },
+        
+          tabBarIndicatorContainerStyle: {
+            backgroundColor: "#aaa",
+            position: "absolute",
+            top: 49,
+            height: 1,
+          },
+        }}
+      >
+          <MaterialTopTabs.Screen name="index" options={{ title: "For You" }} />
+          <MaterialTopTabs.Screen
+            name="following"
+            options={{ title: "Following" }}
+          />
+      </MaterialTopTabs>
+    </View>
+  );
+}
+
+
+
+
+
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  menuButton: {
+    padding: 8,
+    position: "absolute",
+    left: 16,
+  },
+
+  loginButton: {
+    padding: 8,
+    backgroundColor: "black",
+    borderRadius: 4,
+    position: "absolute",
+    right: 16,
+  },
+  loginButtonText: {
+    color: "white",
+  },
+  headerLogo: {
+    position: "absolute",
+    right: 16,
+    width: 30,
+    height: 30,
+  },
+
+});
+

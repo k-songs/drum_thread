@@ -1,4 +1,49 @@
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
+export default function Index() {
+  const router = useRouter();
+  const { username } = useLocalSearchParams();
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <View>
+        <TouchableOpacity onPress={() => router.push(`/${username}`)}>
+          <Text>Threads</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <TouchableOpacity onPress={() => router.push(`/${username}/replies`)}>
+          <Text>replies</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View>
+        <TouchableOpacity onPress={() => router.push(`/${username}/reposts`)}>
+          <Text>Remote</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+
+
+
+
+/* import { Text, View, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {useState} from "react"
@@ -52,3 +97,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
+ */

@@ -1,4 +1,12 @@
-import {
+import {Slot} from 'expo-router'
+
+
+
+export default Slot;
+
+
+
+/* import {
   type MaterialTopTabNavigationEventMap,
   type MaterialTopTabNavigationOptions,
   createMaterialTopTabNavigator,
@@ -119,3 +127,5 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
 });
+ */
+
