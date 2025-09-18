@@ -1,58 +1,34 @@
 import { Ionicons } from "@expo/vector-icons";
 import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
-import { useRef } from "react";
+import { useState } from "react";
 import * as React from "react";
-import { Animated, Pressable, Text } from "react-native";
-
-const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
-  const { children, onPress, style, ...restProps } = props;
-  const scaleValue = useRef(new Animated.Value(1)).current;
-
-  const handlePressOut = () => {
-    Animated.sequence([
-      Animated.spring(scaleValue, {
-        toValue: 1.2,
-        useNativeDriver: true,
-        speed: 200,
-      }),
-      Animated.spring(scaleValue, {
-        toValue: 1,
-        useNativeDriver: true,
-        speed: 200,
-      }),
-    ]).start();
-  };
-
-  return (
-    <Pressable
-      onPress={onPress}
-      onPressOut={handlePressOut}
-      style={[
-        { flex: 1, justifyContent: "center", alignItems: "center" },
-        style,
-      ]}
-      android_ripple={{ borderless: false, radius: 0 }}
-    >
-      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-        {children}
-      </Animated.View>
-    </Pressable>
-  );
-};
+import {
+  Animated,
+  Pressable,
+  Text,
+  Modal,
+  View,
+  TouchableOpacity,
+} from "react-native";
 
 export default function TabLayout() {
   const router = useRouter();
+  const isLoggedIn = true;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
   return (
     <>
       <Tabs
         backBehavior="history"
         screenOptions={{
           headerShown: false,
-          tabBarButton: (props: BottomTabBarButtonProps) => (
-            <AnimatedTabBarButton {...props} />
-          ),
         }}
       >
         <Tabs.Screen
@@ -101,8 +77,11 @@ export default function TabLayout() {
             tabPress: (e) => {
               console.log("tabPress");
               e.preventDefault();
-
-              router.navigate("/modal");
+              if (isLoggedIn) {
+                router.navigate("/modal");
+              } else {
+                openLoginModal();
+              }
             },
           }}
           options={{
@@ -120,10 +99,11 @@ export default function TabLayout() {
           name="activity"
           listeners={{
             tabPress: (e) => {
-              e.preventDefault();
-              router.navigate("/activity");
-            },
-          }}
+              if (!isLoggedIn) {
+                e.preventDefault();
+                openLoginModal();
+              }
+          },}}
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) => (
@@ -139,8 +119,10 @@ export default function TabLayout() {
           name="[username]"
           listeners={{
             tabPress: (e) => {
-              e.preventDefault();
-              router.navigate("/[username]");
+              if (!isLoggedIn) {
+                e.preventDefault();
+                openLoginModal();
+              }
             },
           }}
           options={{
@@ -161,7 +143,8 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      {/*      <Modal
+
+      <Modal
         visible={isLoginModalOpen}
         transparent={true}
         animationType="slide"
@@ -174,15 +157,14 @@ export default function TabLayout() {
           }}
         >
           <View style={{ backgroundColor: "white", padding: 20 }}>
-            <Pressable onPress={toLoginPage}>
-              <Text>Login Modal</Text>
-            </Pressable>
+            <Text>Login Modal</Text>
+
             <TouchableOpacity onPress={closeLoginModal}>
               <Ionicons name="close" size={24} color="#555" />
             </TouchableOpacity>
           </View>
         </View>
-      </Modal> */}
+      </Modal>
     </>
   );
 }
