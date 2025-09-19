@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { BottomTabBar, type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
 import { useState } from "react";
 import * as React from "react";
@@ -11,6 +11,48 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import { useRef } from "react";
+
+
+
+const AnimatedTabBarButton = (props:BottomTabBarButtonProps ) => {
+  const { children, onPress, style, ...restProps } = props;
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const handlePressOut = () => {
+    Animated.sequence([
+      Animated.spring(scaleValue, {
+        toValue: 1.2,
+        useNativeDriver: true,
+        speed: 200,
+      }),
+      Animated.spring(scaleValue, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 200,
+      }),
+    ]).start();
+  };
+//stagger : 일전항 간격을 두고 하나하나 실행하는것 delay,pararrell,스피드 ,프릭션 같이 사용못함
+  return (
+    <Pressable
+      onPress={onPress}
+      onPressOut={handlePressOut}
+      style={[
+        { flex: 1, justifyContent: "center", alignItems: "center" },
+        style,
+      ]}
+      android_ripple={{ borderless: false, radius: 0 }}
+    >
+      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+
+
 
 export default function TabLayout() {
   const router = useRouter();
@@ -29,6 +71,7 @@ export default function TabLayout() {
         backBehavior="history"
         screenOptions={{
           headerShown: false,
+        tabBarButton:(props)=><AnimatedTabBarButton{...props}/>,
         }}
       >
         <Tabs.Screen
