@@ -46,14 +46,14 @@ console.log(currentTab,"currentTab") */
       ]}
     >
       <View style={styles.header}>
-        <Pressable
+     {/*    <Pressable
           style={styles.menuButton}
           onPress={() => {
             setIsSideMenuOpen(true);
           }}
         >
           <Ionicons name="menu" size={24} color="black" />
-        </Pressable>
+        </Pressable> */}
         <SideMenu
           isVisible={isSideMenuOpen}
           onClose={() => setIsSideMenuOpen(false)}
