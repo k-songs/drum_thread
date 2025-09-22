@@ -17,6 +17,8 @@ import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
+import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
 
 interface Thread {
   id: string;
@@ -54,9 +56,10 @@ export function ListFooter({
 
 export default function Modal() {
   const router = useRouter();
-  const [threads, setThreads] = useState<Thread[]>([   //쓰레드배열 여러개한방이니
-    { id: Date.now().toString(), text: "", imageUris: [] },  //uuid,nanoid
-  ]);    // 해시,위치정보,로케이션
+  const [threads, setThreads] = useState<Thread[]>([
+    //쓰레드배열 여러개한방이니
+    { id: Date.now().toString(), text: "", imageUris: [] }, //uuid,nanoid
+  ]); // 해시,위치정보,로케이션
   const insets = useSafeAreaInsets();
   const [replyOption, setReplyOption] = useState("Anyone");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -66,9 +69,13 @@ export default function Modal() {
 
   const handleCancel = () => {
     if (isPosting) return;
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/");
+      console.warn("no screen to go back to from modal");
+    }
   };
-
   const handlePost = () => {};
 
   const updateThreadText = (id: string, text: string) => {
@@ -79,12 +86,12 @@ export default function Modal() {
     );
   };
 
-  const canAddThread = (threads.at(-1)?.text.trim().length ?? 0) > 0;//boolean
-  const canPost = threads.every((thread) => thread.text.trim().length > 0);//boolean
-
-  const addImageToThread = (id: string, uri: string) => {};
-
-  const addLocationToThread = (id: string, location: [number, number]) => {};
+  const canAddThread =
+    (threads.at(-1)?.text.trim().length ?? 0) > 0 ||
+    (threads.at(-1)?.imageUris.length ?? 0) > 0;
+  const canPost = threads.every(
+    (thread) => thread.text.trim().length > 0 || thread.imageUris.length > 0
+  );
 
   const removeThread = (id: string) => {
     setThreads((prevThreads) =>
@@ -92,11 +99,96 @@ export default function Modal() {
     );
   };
 
-  const pickImage = async (id: string) => {};
+  const pickImage = async (id: string) => {
+    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Photos permission not granted",
+        "Please grant photos permission to use this feature",
+        [
+          { text: "Open settings", onPress: () => Linking.openSettings() },
+          {
+            text: "Cancer",
+          },
+        ]
+      );
+      return;
+    } //권한을 얻은 경우 let
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+    console.log("image result", result);
+    if (!result.canceled) {
+      setThreads((prevThreads) =>
+        prevThreads.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUris: thread.imageUris.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+    }
+  };
 
-  const takePhoto = async (id: string) => {};
+  const takePhoto = async (id: string) => {
+    let { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera permission not granted",
+        "Please grant Camera permission to use this feature",
+        [
+          { text: "Open settings", onPress: () => Linking.openSettings() },
+          {
+            text: "Cancer",
+          },
+        ]
+      );
+      return;
+    }
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images", "livePhotos", "videos"],
+      allowsMultipleSelection: true,
+      selectionLimit: 5,
+    });
+    console.log("camera result", result);
+    status = await (await MediaLibrary.requestPermissionsAsync()).status;
+    if (status === "granted" && result.assets?.[0].uri) {
+      MediaLibrary.saveToLibraryAsync(result.assets?.[0].uri);
+    }
+    if (!result.canceled) {
+      setThreads((prevThreads) =>
+        prevThreads.map((thread) =>
+          thread.id === id
+            ? {
+                ...thread,
+                imageUris: thread.imageUris.concat(
+                  result.assets?.map((asset) => asset.uri) ?? []
+                ),
+              }
+            : thread
+        )
+      );
+    }
+  };
 
-  const removeImageFromThread = (id: string, uriToRemove: string) => {};
+  const removeImageFromThread = (id: string, uriToRemove: string) => {
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === id
+          ? {
+              ...thread,
+              imageUris: thread.imageUris.filter((uri) => uri !== uriToRemove),
+            }
+          : thread
+      )
+    );
+  };
 
   const getMyLocation = async (id: string) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -121,6 +213,12 @@ export default function Modal() {
     }
 
     const location = await Location.getCurrentPositionAsync({});
+    const address = await Location.reverseGeocodeAsync({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    });
+    console.log("location", location.coords);
+    console.log("address", address);
 
     setThreads((prevThreads) =>
       prevThreads.map((thread) =>
@@ -246,8 +344,9 @@ export default function Modal() {
       <FlatList
         data={threads}
         keyExtractor={(item) => item.id}
-        renderItem={renderThreadItem}    //바디
-        ListFooterComponent={             //해더만 없음 
+        renderItem={renderThreadItem} //바디
+        ListFooterComponent={
+          //해더만 없음
           <ListFooter
             canAddThread={canAddThread}
             addThread={() => {
@@ -262,16 +361,53 @@ export default function Modal() {
         }
         style={styles.list}
         contentContainerStyle={{ backgroundColor: "#ddd" }}
-        keyboardShouldPersistTaps="handled"// 공식문서 중요도 낮음 키보드내려가고
+        keyboardShouldPersistTaps="handled" // 공식문서 중요도 낮음 키보드내려가고
       />
-
+         <RNModal
+        transparent={true}
+        visible={isDropdownVisible}
+        animationType="fade"
+        onRequestClose={() => setIsDropdownVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsDropdownVisible(false)}
+        >
+          <View
+            style={[styles.dropdownContainer, { bottom: insets.bottom + 30 }]}
+          >
+            {replyOptions.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.dropdownOption,
+                  option === replyOption && styles.selectedOption,
+                ]}
+                onPress={() => {
+                  setReplyOption(option);
+                  setIsDropdownVisible(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.dropdownOptionText,
+                    option === replyOption && styles.selectedOptionText,
+                  ]}
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </RNModal>
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable onPress={() => setIsDropdownVisible(true)}>
           <Text style={styles.footerText}>{replyOption} can reply & quote</Text>
         </Pressable>
         <Pressable
           style={[styles.postButton, !canPost && styles.postButtonDisabled]}
-          disabled={!canPost}//삭제한번 해보기
+          disabled={!canPost} //삭제한번 해보기
           onPress={handlePost}
         >
           <Text style={styles.postButtonText}>Post</Text>
@@ -300,7 +436,7 @@ const styles = StyleSheet.create({
   cancel: {
     color: "#000",
     fontSize: 16,
-    borderBottomWidth:StyleSheet.hairlineWidth
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   disabledText: {
     color: "#ccc",

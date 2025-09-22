@@ -1,0 +1,42 @@
+[
+    {
+      "id": "quiz_single_instrument_identification",
+      "title": "단일 악기 소리 식별",
+      "description": "제시된 드럼 소리가 어떤 악기인지 맞춰보세요.",
+      "level": "beginner",
+      "questions": [
+        {
+          "questionId": "q_snare_id",
+          "instrumentKey": "snare",
+          "questionText": "다음 소리는 무엇일까요?",
+          "options": ["스네어", "킥드럼", "하이햇", "심벌"],
+          "correctAnswerIndex": 0,
+          "explanation": "이것은 스네어 드럼 소리입니다. 날카롭고 튀는 소리가 특징입니다."
+        },
+        {
+          "questionId": "q_hihat_id",
+          "instrumentKey": "hihat",
+          "questionText": "어떤 드럼 소리일까요?",
+          "options": ["킥드럼", "심벌", "하이햇", "스네어"],
+          "correctAnswerIndex": 2,
+          "explanation": "짧고 선명한 금속음은 하이햇입니다."
+        }
+      ]
+    },
+    {
+      "id": "quiz_rhythm_pattern_A",
+      "title": "기본 리듬 패턴 듣고 구분하기",
+      "description": "제시된 리듬 패턴을 듣고 올바른 패턴을 선택하세요.",
+      "level": "intermediate",
+      "questions": [
+        {
+          "questionId": "q_rhythm_A_pattern1",
+          "audioFile": "sounds/rhythm_pattern_A_1.mp3",
+          "questionText": "이 리듬 패턴은 어떤 것과 일치합니까?",
+          "options": ["빠른 템포의 락 비트", "느린 블루스 패턴", "재즈 스윙 패턴"],
+          "correctAnswerIndex": 0,
+          "explanation": "강한 백비트가 특징인 빠른 템포의 락 비트입니다."
+        }
+      ]
+    }
+  ]

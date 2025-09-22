@@ -11,6 +11,25 @@ const formatDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+export const loadLearningData = async (): Promise<Record<string, boolean>> => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(LEARNING_DATA_KEY);
+    return jsonValue != null ? JSON.parse(jsonValue) : {};
+  } catch (e) {
+    console.error('Failed to load learning data:', e);
+    return {};
+  }
+};
+
+export const saveLearningData = async (data: Record<string, boolean>) => {
+  try {
+    const jsonValue = JSON.stringify(data);
+    await AsyncStorage.setItem(LEARNING_DATA_KEY, jsonValue);
+  } catch (e) {
+    console.error('Failed to save learning data:', e);
+  }
+};
+
 export const injectDummyLearningData = async () => {
   console.log('Injecting dummy learning data...');
 
