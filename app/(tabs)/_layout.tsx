@@ -1,5 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { BottomTabBar, type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import {
+  BottomTabBar,
+  type BottomTabBarButtonProps,
+} from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
 import { useState } from "react";
 import * as React from "react";
@@ -13,9 +16,7 @@ import {
 } from "react-native";
 import { useRef } from "react";
 
-
-
-const AnimatedTabBarButton = (props:BottomTabBarButtonProps ) => {
+const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
   const { children, onPress, style, ...restProps } = props;
   const scaleValue = useRef(new Animated.Value(1)).current;
 
@@ -33,7 +34,7 @@ const AnimatedTabBarButton = (props:BottomTabBarButtonProps ) => {
       }),
     ]).start();
   };
-//stagger : 일전항 간격을 두고 하나하나 실행하는것 delay,pararrell,스피드 ,프릭션 같이 사용못함
+  //stagger : 일전항 간격을 두고 하나하나 실행하는것 delay,pararrell,스피드 ,프릭션 같이 사용못함
   return (
     <Pressable
       onPress={onPress}
@@ -51,12 +52,9 @@ const AnimatedTabBarButton = (props:BottomTabBarButtonProps ) => {
   );
 };
 
-
-
-
 export default function TabLayout() {
   const router = useRouter();
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {
@@ -65,13 +63,19 @@ export default function TabLayout() {
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
   };
+const toLoginPage =()=>{
+  setIsLoginModalOpen(false);
+  router.push('/login')
+}
+
+
   return (
     <>
       <Tabs
         backBehavior="history"
         screenOptions={{
           headerShown: false,
-        tabBarButton:(props)=><AnimatedTabBarButton{...props}/>,
+          tabBarButton: (props) => <AnimatedTabBarButton {...props} />,
         }}
       >
         <Tabs.Screen
@@ -146,7 +150,8 @@ export default function TabLayout() {
                 e.preventDefault();
                 openLoginModal();
               }
-          },}}
+            },
+          }}
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) => (
@@ -200,7 +205,9 @@ export default function TabLayout() {
           }}
         >
           <View style={{ backgroundColor: "white", padding: 20 }}>
-            <Text>Login Modal</Text>
+            <Pressable onPress={toLoginPage}>
+              <Text>Login Modal</Text>
+            </Pressable>
 
             <TouchableOpacity onPress={closeLoginModal}>
               <Ionicons name="close" size={24} color="#555" />

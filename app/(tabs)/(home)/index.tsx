@@ -15,7 +15,7 @@ export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
   const insects = useSafeAreaInsets();
-  const isLoggedIn = false;
+  const isLoggedIn = true;
 
   const { width, height } = Dimensions.get("window");
 
@@ -42,7 +42,7 @@ export default function Index() {
             onPress={() => router.navigate("/login")}
             style={styles.loginButton}
           >
-            <Text style={styles.loginButtonText}>로그인</Text>
+            <Text style={styles.loginButtonText}>로그인111</Text>
           </TouchableOpacity>
         )}
       </BlurView>
