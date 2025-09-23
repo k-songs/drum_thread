@@ -19,13 +19,13 @@ if (__DEV__) {
         if(username === "zerocho" && password === "1234"){
         return {
           accessToken: "access-token",
-          refreshToken: "refresh-Token",
+          refreshToken: "refresh-token",
           user: {
             id: "zerocho",
           },
         };
     } else {
-        return new Response(401, {}, { message: "Invalid credentials" });
+        return new Response(401, {}, { message: "Inval 서버 메세지" });
       }
     });
   },
