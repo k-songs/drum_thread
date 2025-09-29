@@ -21,7 +21,11 @@ if (__DEV__) {
           accessToken: "access-token",
           refreshToken: "refresh-token",
           user: {
-            id: "zerocho",
+            id: "zerohch0",
+            name: "ZeroCho",
+            description: "lover, programmer, youtuber",
+            profileImageUrl:
+              "https://avatars.githubusercontent.com/u/885857?v=4",
           },
         };
     } else {

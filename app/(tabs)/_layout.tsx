@@ -14,7 +14,8 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { useRef } from "react";
+import { useRef, useContext } from "react";
+import { AuthContext } from "../_layout";
 
 const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
   const { children, onPress, style, ...restProps } = props;
@@ -55,6 +56,7 @@ const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
 export default function TabLayout() {
   const router = useRouter();
   const isLoggedIn = true;
+  const {user} = useContext(AuthContext);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {

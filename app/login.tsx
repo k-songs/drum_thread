@@ -1,14 +1,71 @@
-import { Redirect } from "expo-router";
+/* import { Redirect, useRouter} from "expo-router";
 import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useContext } from "react";
+import {AuthContext} from "./_layout";
+
+
+
+  export default function Login() {
+    const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const { user, login } = useContext(AuthContext);
+    const isLoggedIn = !!user;
+  
+    if (isLoggedIn) {
+      return <Redirect href="/(tabs)" />;
+    }
+
+  return (
+    <View style={{ paddingTop: insets.top }}>
+      <Pressable onPress={() => router.back()}>
+        <Text>Back</Text>
+      </Pressable>
+
+      <Pressable onPress={login} style={styles.loginButton}>
+        <Text style={styles.loginButtonText}>Login mock</Text>
+      </Pressable>
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  loginButton: {
+    backgroundColor: "blue",
+    padding: 10,
+    borderRadius: 5,
+    width: 200,
+    alignItems: "flex-start",
+  },
+  loginButtonText: {
+    color: "white",
+  },
+});
+ */
+
+import { Redirect, router } from "expo-router";
+import { View, Text, Pressable, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useEffect} from "react";
 
 export default function Login() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    const checkAsyncStorage = async () => {
+    try {
+    const myValue = await AsyncStorage.getItem("user");
+    console.log("AsyncStorage 'user' 값:", myValue);
+    // 여기서 원하는 로직을 추가하여 myValue를 사용합니다.
+    } catch (error) {
+    console.error("AsyncStorage에서 'user'를 읽는 중 오류 발생:", error);
+    }
+    };
+    checkAsyncStorage();
+    }, []);
+  const isLoggedIn = false;
 
   const onLogin = () => {
     fetch("/login", {
@@ -17,7 +74,7 @@ export default function Login() {
         username: "zerocho",
         password: "1234",
       }),
-// app/login.tsx (21-29행 부근)
+
 
     })
       .then(async (res) => { // <--- 여기에 async 키워드를 추가해주세요!
@@ -36,12 +93,18 @@ export default function Login() {
 
       .then((data) => {
         console.log("data1", data);
-        setIsLoggedIn(true)
-         router.replace("/(tabs)")
+        return Promise.all([
+        SecureStore.setItemAsync("accessToken", data.accessToken),
+        SecureStore.setItemAsync("refreshToken", data.refreshToken),
+        AsyncStorage.setItem("user", JSON.stringify(data.user)),
+        ])
+      })
+      .then(() => {
+        router.push("/(tabs)")
       })
       .catch((error) => {
         console.error("페칭,파싱에러 로그인", error);
-        Alert.alert("네트워크 에러 로그인");
+     
       });
   };
   if (isLoggedIn) {
