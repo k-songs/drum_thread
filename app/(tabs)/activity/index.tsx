@@ -5,24 +5,23 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { usePathname, useRouter, useLocalSearchParams } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import NotFound from "@/app/+not-found";
 import { Ionicons } from "@expo/vector-icons";
 import SideMenu from "@/components/SideMenu";
-import { useState } from "react";
-
+import { useState, useContext } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AuthContext } from "../../_layout";
 
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  const localSearchParams = useLocalSearchParams();
-
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = !!user;
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   /*   const currentTab = localSearchParams.tabs; 
 console.log(currentTab,"currentTab") */
-
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
   if (
     ![
@@ -46,14 +45,16 @@ console.log(currentTab,"currentTab") */
       ]}
     >
       <View style={styles.header}>
-     {/*    <Pressable
-          style={styles.menuButton}
-          onPress={() => {
-            setIsSideMenuOpen(true);
-          }}
-        >
-          <Ionicons name="menu" size={24} color="black" />
-        </Pressable> */}
+        {isLoggedIn && (
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => {
+              setIsSideMenuOpen(true);
+            }}
+          >
+            <Ionicons name="menu" size={24} color="black" />
+          </Pressable>
+        )}
         <SideMenu
           isVisible={isSideMenuOpen}
           onClose={() => setIsSideMenuOpen(false)}

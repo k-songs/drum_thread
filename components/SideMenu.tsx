@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur"; // For background blur effect
-
+import { AuthContext } from "../app/_layout"
 
 interface SideMenuProps {
   isVisible: boolean;
@@ -31,12 +31,12 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
   const closeAppearance = () => {
     setIsAppearanceVisible(false);
   };
-
+  const { logout } = useContext(AuthContext);
   const handleLogout = () => {
-  
-    onClose(); // Close the menu after logout
-    // Optionally navigate to login screen or home screen
-    // e.g., using router.replace('/login');
+    if (logout) {
+      logout();
+    }
+    onClose();
   };
 
   // Use Modal for better presentation and handling outside clicks
@@ -183,8 +183,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
                   colorScheme === "dark"
                     ? styles.appearanceButtonDark
                     : {
-                        backgroundColor: "#888",
-                      },
+                      backgroundColor: "#888",
+                    },
                 ]}
                 onPress={() => {
                   Appearance.setColorScheme("light");
@@ -201,8 +201,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
                   styles.appearanceButton,
                   colorScheme === "dark"
                     ? {
-                        backgroundColor: "#888",
-                      }
+                      backgroundColor: "#888",
+                    }
                     : styles.appearanceButtonLight,
                 ]}
                 onPress={() => {
@@ -220,11 +220,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
                   styles.appearanceButton,
                   !["dark", "light"].includes(Appearance.getColorScheme() || "")
                     ? {
-                        backgroundColor: "#888",
-                      }
+                      backgroundColor: "#888",
+                    }
                     : colorScheme === "dark"
-                    ? styles.appearanceButtonDark
-                    : styles.appearanceButtonLight,
+                      ? styles.appearanceButtonDark
+                      : styles.appearanceButtonLight,
                 ]}
                 onPress={() => {
                   Appearance.setColorScheme(undefined);

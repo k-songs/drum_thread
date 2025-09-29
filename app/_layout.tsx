@@ -24,12 +24,12 @@ export const AuthContext = createContext<{
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
 
-
-/*   useEffect(() => {
+   useEffect(() => {
     AsyncStorage.getItem("user").then((user) => {
       setUser(user ? JSON.parse(user) : null);
     });
-  }, []); */
+    //Todo: 토큰 만료 시 로그아웃 처리
+  }, []); 
 
   const login = () => {
     console.log("login");
