@@ -48,12 +48,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useEffect} from "react";
+import {AuthContext} from "./_layout";
+import {useContext} from "react";
+
 
 export default function Login() {
 
   const insets = useSafeAreaInsets();
+  const { user ,login} = useContext(AuthContext);
+  const isLoggedIn = !!user;
 
-  useEffect(() => {
+/*   useEffect(() => {
     const checkAsyncStorage = async () => {
     try {
     const myValue = await AsyncStorage.getItem("user");
@@ -64,49 +69,10 @@ export default function Login() {
     }
     };
     checkAsyncStorage();
-    }, []);
-  const isLoggedIn = false;
-
-  const onLogin = () => {
-    fetch("/login", {
-      method: "POST",
-      body: JSON.stringify({
-        username: "zerocho",
-        password: "1234",
-      }),
+    }, []); */
+  
 
 
-    })
-      .then(async (res) => { // <--- 여기에 async 키워드를 추가해주세요!
-        console.log("res", res, res.status);
-        if (res.status >= 400) {
-            // 먼저 사용자에게 알림을 띄웁니다. (return 제거)
-            Alert.alert("Error", "Invalid 로그인");
-            // 그 후 응답 본문을 파싱하여 에러 객체를 생성하고 던집니다. (await 추가)
-            const errorData = await res.json(); // <--- res.json() 앞에 await을 추가해주세요.
-            throw new Error(errorData.message || "로그인 실패"); // <--- 이 코드는 throw로 에러를 던집니다.
-        }
-        return res.json();
-      })
-
-// ... existing code ...
-
-      .then((data) => {
-        console.log("data1", data);
-        return Promise.all([
-        SecureStore.setItemAsync("accessToken", data.accessToken),
-        SecureStore.setItemAsync("refreshToken", data.refreshToken),
-        AsyncStorage.setItem("user", JSON.stringify(data.user)),
-        ])
-      })
-      .then(() => {
-        router.push("/(tabs)")
-      })
-      .catch((error) => {
-        console.error("페칭,파싱에러 로그인", error);
-     
-      });
-  };
   if (isLoggedIn) {
     return <Redirect href="/(tabs)" />;
   }
@@ -117,7 +83,7 @@ export default function Login() {
         <Text>Back</Text>
       </Pressable>
 
-      <Pressable onPress={onLogin} style={styles.loginButton}>
+      <Pressable onPress={login} style={styles.loginButton}>
         <Text style={styles.loginButtonText}>Login mock</Text>
       </Pressable>
     </View>

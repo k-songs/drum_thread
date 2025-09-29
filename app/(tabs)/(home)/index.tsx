@@ -9,13 +9,15 @@ import {
 import { usePathname, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import {AuthContext} from "../../_layout";
 
 export default function Index() {
   const router = useRouter();
   const pathname = usePathname();
   const insects = useSafeAreaInsets();
-  const isLoggedIn = false;
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = !!user
 
   const { width, height } = Dimensions.get("window");
 

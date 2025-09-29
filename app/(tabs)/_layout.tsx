@@ -55,8 +55,9 @@ const AnimatedTabBarButton = (props: BottomTabBarButtonProps) => {
 
 export default function TabLayout() {
   const router = useRouter();
-  const isLoggedIn = true;
+ 
   const {user} = useContext(AuthContext);
+  const isLoggedIn = !!user;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openLoginModal = () => {

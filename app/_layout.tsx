@@ -5,6 +5,7 @@ import { Alert } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 
+
 interface User {
   id: string;
   name: string;
@@ -14,14 +15,21 @@ interface User {
 
 export const AuthContext = createContext<{
   user: User | null;
-  login?: () => Promise<any>;
-  logout?: () => Promise<any>;
-}>({
-  user: null,
-});
+  login?: () => Promise<void>;
+  logout?: () => Promise<void>;
+}>({ user: null });
+
+
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
+
+
+/*   useEffect(() => {
+    AsyncStorage.getItem("user").then((user) => {
+      setUser(user ? JSON.parse(user) : null);
+    });
+  }, []); */
 
   const login = () => {
     console.log("login");
@@ -60,13 +68,9 @@ export default function RootLayout() {
     ]);
   };
 
-  useEffect(() => {
-    AsyncStorage.getItem("user").then((user) => {
-      setUser(user ? JSON.parse(user) : null);
-    });
-  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login: async () => { await login(); }, logout: async () => { await logout(); } }}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
