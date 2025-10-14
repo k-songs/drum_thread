@@ -76,7 +76,43 @@ export default function Modal() {
       console.warn("no screen to go back to from modal");
     }
   };
-  const handlePost = () => {};
+  const handlePost = async () => {
+    if (!canPost || isPosting) return;
+
+    setIsPosting(true);
+    try {
+      const response = await fetch("/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threads: threads.map((thread) => ({
+            text: thread.text,
+            imageUris: thread.imageUris,
+            location: thread.location,
+          })),
+          replyOption,
+        }),
+      });
+
+      if (response.ok) {
+        // 성공 시 화면 닫기
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace("/");
+        }
+      } else {
+        Alert.alert("오류", "게시글 업로드에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Post error:", error);
+      Alert.alert("오류", "네트워크 오류가 발생했습니다.");
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
   const updateThreadText = (id: string, text: string) => {
     setThreads((prevThreads) =>

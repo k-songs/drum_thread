@@ -14,7 +14,7 @@ export default function Login() {
   const { user ,login} = useContext(AuthContext);
   const isLoggedIn = !!user;
 
-/*   useEffect(() => {
+  useEffect(() => {
     const checkAsyncStorage = async () => {
     try {
     const myValue = await AsyncStorage.getItem("user");
@@ -25,7 +25,7 @@ export default function Login() {
     }
     };
     checkAsyncStorage();
-    }, []); */
+    }, []); 
   
 
 

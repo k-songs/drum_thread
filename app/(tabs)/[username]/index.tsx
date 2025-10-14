@@ -2,172 +2,122 @@ import {
   Text,
   View,
   StyleSheet,
+  useColorScheme,
   Pressable,
-  TouchableOpacity,
   Image,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import SideMenu from "@/components/SideMenu";
-import { useContext ,useState} from "react";
-import { AuthContext } from "../../_layout";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-
+import { usePathname } from "expo-router";
+import { useContext } from "react";
+import { AuthContext } from "@/app/_layout";
 
 export default function Index() {
-  const router = useRouter();
-  const { username } = useLocalSearchParams();
-  const { user } = useContext(AuthContext);   
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
-  const insets = useSafeAreaInsets();
-  const isLoggedIn = !!user;
-  
+  const colorScheme = useColorScheme();
+  const pathname = usePathname();
+  console.log(pathname);
+  const { user } = useContext(AuthContext);
+
   return (
     <View
-    style={[
-      styles.container,
-      { paddingTop: insets.top, paddingBottom: insets.bottom },
-    ]}
-  >
- 
-      <View style={styles.header}>
-{isLoggedIn && (
-        <Pressable
-        style={styles.menuButton}
-        onPress={() => {
-        setIsSideMenuOpen(true)
-        }}
-        >
-
-        
-        <Ionicons name="menu" size={24} color="black" />
-        </Pressable>
-        )}
-      <SideMenu
-        isVisible={isSideMenuOpen}
-        onClose={() => setIsSideMenuOpen(false)}
-      />
-      </View>
-   
-      <View style={styles.profile}>
-        <View style={styles.profileHeader}>
+      style={[
+        styles.container,
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+      ]}
+    >
+      {pathname === "/undefined" && (
+        <View style={styles.postInputContainer}>
           <Image
             source={{ uri: user?.profileImageUrl }}
             style={styles.profileAvatar}
           />
-          <Text>{user?.name}</Text>
-          <Text>{user?.id}</Text>
-          <Text>{user?.description}</Text>
+          <Text
+            style={
+              colorScheme === "dark"
+                ? styles.postInputTextDark
+                : styles.postInputTextLight
+            }
+          >
+            What's new?
+          </Text>
+          <Pressable
+            style={[
+              styles.postButton,
+              colorScheme === "dark"
+                ? styles.postButtonDark
+                : styles.postButtonLight,
+            ]}
+          >
+            <Text
+              style={[
+                styles.postButtonText,
+                colorScheme === "dark"
+                  ? styles.postButtonTextDark
+                  : styles.postButtonTextLight,
+              ]}
+            >
+              Post
+            </Text>
+          </Pressable>
         </View>
-      </View>
-      <View style={styles.tabBar}>
-        <TouchableOpacity onPress={() => router.push(`/${username}`)}>
-          <Text>Threads</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.tabBar}>
-        <TouchableOpacity onPress={() => router.push(`/${username}/replies`)}>
-          <Text>replies</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.tabBar}>
-        <TouchableOpacity onPress={() => router.push(`/${username}/reposts`)}>
-          <Text>Remote</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </View>
-  
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    height: 50,
+  containerDark: {
+    backgroundColor: "#101010",
   },
-
-  menuButton: {
-    position: "absolute",
-    left: 20,
-    top: 10,
-  },
-
-  tabBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  profile: {
-  
-  },
-  profileHeader: {
-
+  containerLight: {
+    backgroundColor: "white",
   },
   profileAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
   },
-});
-
-
-
-/* import { Text, View, StyleSheet, Pressable } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {useState} from "react"
-import SideMenu from "@/components/SideMenu";
- export default function Index() {
-  const router = useRouter(); // 훅 호출
-  const { username } = useLocalSearchParams();
-  const usernameString = typeof username === 'string' ? username : ''; // 타입 단언 또는 기본값 설정
-  const insets =useSafeAreaInsets()     
-  const [isSideMenuOpen,setIsSideMenuOpen]= useState(false)
-
-
-
-
-  return (
-    
-  <View style={[styles.container,{paddingTop:insets.top}]}>
-    <View style={styles.header}>
-      <Pressable>
-        
-      </Pressable>
-      <View style={styles.profile}>
-          <View style={styles.profileHeader}></View>
-          <Text>
-
-          </Text>
-      </View>
-    <View style={styles.tabBar}>
-      <Text>{username}의 Threads</Text>
-    </View>
-    </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container:{
-
-  },
-  header:{
-
-  },
-  profileHeader:{
-
-  },
-  profile:{
-    
-  },
-  tabBar: {
+  postInputContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#aaa",
+  },
+  postButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    position: "absolute",
+    right: 0,
+  },
+  postButtonLight: {
+    backgroundColor: "black",
+  },
+  postButtonDark: {
+    backgroundColor: "white",
+  },
+  postButtonText: {
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  postButtonTextLight: {
+    color: "white",
+  },
+  postButtonTextDark: {
+    color: "black",
+  },
+  postInputText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  postInputTextLight: {
+    color: "black",
+  },
+  postInputTextDark: {
+    color: "#aaa",
   },
 });
- */

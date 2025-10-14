@@ -50,7 +50,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
       >
         <BlurView
           intensity={colorScheme === "dark" ? 0 : 10}
-          tint="light"
+          tint="default"    //light, dark, default 전체적인 배경 색상 1군데
           style={styles.overlay}
         >
           {/* Touchable overlay to close the menu when clicking outside */}
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     // The BlurView replaces the semi-transparent background
-    // backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    //backgroundColor: 'rgba(0, 0, 0, 0.3)',  // 전체적인 배경 색상 2군데
     position: "relative",
   },
   touchableOverlay: {

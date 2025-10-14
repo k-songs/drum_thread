@@ -3,139 +3,138 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Image,
-  Dimensions,
-  Pressable,
+  useColorScheme,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
-import { usePathname, useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
-import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from "../../_layout";
-import SideMenu from "@/components/SideMenu";
-import { Ionicons } from "@expo/vector-icons";
-
-
+import { useRouter, useFocusEffect } from "expo-router";
+import Post, { type Post as PostType } from "@/components/Post";
+import { useState, useCallback } from "react";
 
 export default function Index() {
   const router = useRouter();
-  const pathname = usePathname();
-  const insects = useSafeAreaInsets();
-  const { user ,logout} = useContext(AuthContext);
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
-  const isLoggedIn = !!user
+  const colorScheme = useColorScheme();
+  const [posts, setPosts] = useState<PostType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(10); // 간단한 무한 스크롤
 
-  const { width, height } = Dimensions.get("window");
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  useEffect(() => {
-    console.log(insects, "insets");
-    console.log("너비", width, "높이", height);
-  }, []);
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    setDisplayedCount(10); // 새로고침 시 처음 10개로 리셋
+    await fetchPosts();
+    setIsRefreshing(false);
+  };
+   //
+  // 간단한 무한 스크롤 - 10개씩 더 보여주기
+  const loadMore = () => {
+    if (displayedCount < posts.length) {
+      setDisplayedCount(prev => Math.min(prev + 10, posts.length));
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [])
+  );
+
+  const displayedPosts = posts.slice(0, displayedCount);
+  const hasMore = displayedCount < posts.length;
+
+  const renderPost = ({ item }: { item: PostType }) => <Post item={item} />;
+
+  const renderFooter = () => {
+    if (!hasMore) return null;
+    
+    return (
+      <View style={styles.footer}>
+        <ActivityIndicator size="small" color="#666" />
+        <Text style={styles.footerText}>더 많은 게시글 로딩 중...</Text>
+      </View>
+    );
+  };
+
+  if (isLoading && posts.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#666" />
+        <Text style={styles.loadingText}>게시글을 불러오는 중...</Text>
+      </View>
+    );
+  }
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insects.top, paddingBottom: insects.bottom },
-      ]}
-    >
-      <BlurView style={styles.header} intensity={70}>
-
-
-      {isLoggedIn && (
-          <Pressable
-            style={styles.menuButton}
-            onPress={() => {
-              setIsSideMenuOpen(true);
-            }}
-          >
-            <Ionicons name="menu" size={24} color="black" />
-          </Pressable>
-        )}
-        <SideMenu
-          isVisible={isSideMenuOpen}
-          onClose={() => setIsSideMenuOpen(false)}
-        />
-        <Image
-          source={require("../../../assets/images/react-logo.png")}
-          style={styles.headerLogo}
-        />
-         
- 
-    
+    <View style={[
+      styles.container,
+      colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+    ]}>
+      <FlatList
+        data={displayedPosts}
+        renderItem={renderPost}
+        keyExtractor={(item) => item.id}
         
-      </BlurView>
-      {!isLoggedIn && (
-        <View style={styles.tabContainer}>
-          <View style={styles.tab}>
-            <Pressable onPress={() => router.push(`/`)}>
-              <Text style={{ color: pathname === "/" ? "red" : "black" }}>
-                For you
-              </Text>
-            </Pressable>
-          </View>
-          <View style={styles.tab}>
-            <Pressable onPress={() => router.push(`/following`)}>
-              <Text style={{ color: pathname === "/" ? "black" : "red" }}>
-                Following
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-      <View>
-        <Pressable onPress={() => router.push(`/@zerocho/post/1`)}>
-          <Text>게시글1</Text>
-        </Pressable>
-      </View>
-      <View>
-        <Pressable onPress={() => router.push(`/@zerocho/post/2`)}>
-          <Text>게시글2</Text>
-        </Pressable>
-      </View>
-      <View>
-        <Pressable onPress={() => router.push(`/@zerocho/post/3`)}>
-          <Text>게시글3</Text>
-        </Pressable>
-      </View>
+        // 간단한 무한 스크롤
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["#666"]}
+            tintColor="#666"
+          />
+        }
+        
+        ListFooterComponent={renderFooter}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  tabContainer: {
-    flexDirection: "row",
+  containerLight: {
+    backgroundColor: "white",
   },
-  tab: {
+  containerDark: {
+    backgroundColor: "#101010",
+  },
+  loadingContainer: {
     flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
-  header: {
+  loadingText: {
+    marginTop: 16,
+    color: "#666",
+    fontSize: 16,
+  },
+  footer: {
+    padding: 20,
     alignItems: "center",
   },
-  headerLogo: {
-    width: 42, // DP, DIP
-    height: 42,
-  },
-  loginButton: {
-    position: "absolute",
-    right: 20,
-    top: 0,
-    backgroundColor: "black",
-    borderWidth: 1,
-    borderColor: "black",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  loginButtonText: {
-    color: "white",
-  },
-  menuButton: {
-    position: "absolute",
-    left: 20,
-    top: 10,
+  footerText: {
+    marginTop: 8,
+    color: "#666",
+    fontSize: 14,
   },
 });

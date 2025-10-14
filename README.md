@@ -9,7 +9,7 @@
 ## 프로젝트 세팅하기
 create-expo-app으로 간단하게 세팅 가능(Node.js LTS 이상 버전이 설치되어 있어야 함)
 
-```bash
+a```bash
 npx create-expo-app@latest threads
 # 구체적인 SDK 버전을 표시하고 싶다면
 # npx create-expo-app@latest threads --template default@sdk-53
