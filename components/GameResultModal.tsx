@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { GameResult } from '@/types/game';
+import { getCurrentLevelInfo } from '@/types/avatar';
 
 interface GameResultModalProps {
   visible: boolean;
@@ -10,6 +11,7 @@ interface GameResultModalProps {
   canContinue: boolean; // 최대 세트 수 체크
   currentSet: number;
   maxSets: number;
+  totalPerfects?: number; // 전체 누적 Perfect 횟수 (옵션)
 }
 
 export const GameResultModal: React.FC<GameResultModalProps> = ({
@@ -20,6 +22,7 @@ export const GameResultModal: React.FC<GameResultModalProps> = ({
   canContinue,
   currentSet,
   maxSets,
+  totalPerfects,
 }) => {
   const accuracy = result.totalQuestions > 0
     ? ((result.perfectCount + result.goodCount) / result.totalQuestions * 100).toFixed(1)
@@ -34,6 +37,11 @@ export const GameResultModal: React.FC<GameResultModalProps> = ({
   };
 
   const grade = getGrade(Number(accuracy));
+  
+  // 🎭 아바타 레벨 정보 (옵션)
+  const currentLevelInfo = totalPerfects !== undefined 
+    ? getCurrentLevelInfo(totalPerfects) 
+    : null;
 
   return (
     <Modal
@@ -134,6 +142,24 @@ export const GameResultModal: React.FC<GameResultModalProps> = ({
                 <Text style={styles.infoValue}>{result.averageReactionTime.toFixed(0)}ms</Text>
               </View>
             </View>
+
+            {/* 🎭 아바타 레벨 정보 */}
+            {currentLevelInfo && (
+              <View style={styles.avatarInfoBox}>
+                <Text style={styles.avatarInfoTitle}>🎭 현재 청능 레벨</Text>
+                <View style={styles.avatarInfoContent}>
+                  <Text style={styles.avatarEmoji}>{currentLevelInfo.emoji}</Text>
+                  <View style={styles.avatarTextContainer}>
+                    <Text style={styles.avatarLevelBadge}>Lv.{currentLevelInfo.level}</Text>
+                    <Text style={styles.avatarName}>{currentLevelInfo.name}</Text>
+                    <Text style={styles.avatarDesc}>{currentLevelInfo.description}</Text>
+                    <Text style={styles.avatarTotalPerfects}>
+                      누적 Perfect: {totalPerfects}회
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
 
             {/* 피드백 메시지 */}
             <View style={styles.feedbackBox}>
@@ -385,6 +411,54 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'white',
     fontWeight: 'bold',
+  },
+  avatarInfoBox: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+  },
+  avatarInfoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  avatarInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  avatarEmoji: {
+    fontSize: 60,
+  },
+  avatarTextContainer: {
+    flex: 1,
+  },
+  avatarLevelBadge: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#4A90E2',
+    marginBottom: 4,
+  },
+  avatarName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  avatarDesc: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+  },
+  avatarTotalPerfects: {
+    fontSize: 12,
+    color: '#4A90E2',
+    fontWeight: '600',
   },
 });
 

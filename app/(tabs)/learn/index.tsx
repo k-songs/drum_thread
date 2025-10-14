@@ -12,6 +12,8 @@ import Animated, {
 import { BurstAnimation, JudgementAnimation } from '@/components/animations';
 import { GameSettingsMenu } from "@/components/GameSettingsMenu";
 import { GameResultModal } from "@/components/GameResultModal";
+import { AvatarDisplay } from "@/components/AvatarDisplay";
+import { LevelUpModal } from "@/components/LevelUpModal";
 import { 
   DifficultyLevel, 
   QuestionCount, 
@@ -19,12 +21,25 @@ import {
   DIFFICULTY_SETTINGS, 
   MAX_SETS 
 } from "@/types/game";
+import { useAvatarProgress } from "@/hooks/useAvatarProgress";
 
 // 음원 대신 사용할 소리 문자열
 const SOUND_STRINGS = ["삐", "땡", "띵", "뚝", "탁"];
 
 export default function LearnIndex() {
   const insets = useSafeAreaInsets();
+  
+  // 🎭 아바타 시스템
+  const {
+    progress: avatarProgress,
+    currentLevelInfo,
+    nextLevelInfo,
+    levelProgress,
+    isLeveledUp,
+    newLevelInfo,
+    addPerfects,
+    closeLevelUpModal,
+  } = useAvatarProgress();
   
   // 🎮 게임 설정
   const [settings, setSettings] = useState<{ questionCount: QuestionCount; difficulty: DifficultyLevel }>({
@@ -85,6 +100,10 @@ export default function LearnIndex() {
       ? reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length
       : 0;
 
+    const accuracy = settings.questionCount > 0
+      ? ((perfectCount + goodCount) / settings.questionCount) * 100
+      : 0;
+
     const result: GameResult = {
       totalQuestions: settings.questionCount,
       perfectCount,
@@ -95,6 +114,9 @@ export default function LearnIndex() {
       averageReactionTime: avgReactionTime,
       completedSets: currentSet,
     };
+
+    // 🎭 아바타 진행도 업데이트
+    addPerfects(perfectCount, accuracy);
 
     console.log("=== 세트 완료 ===", result);
     setGameResult(result);
@@ -429,6 +451,23 @@ export default function LearnIndex() {
         <Text style={styles.title}>청능 훈련 - 1단계</Text>
         <Text style={styles.subtitle}>소리 인지 훈련 (Detection)</Text>
         
+        {/* 🎭 아바타 표시 */}
+        <View style={styles.avatarSection}>
+          <AvatarDisplay
+            avatarInfo={currentLevelInfo}
+            progress={levelProgress}
+            size="medium"
+            showProgress={true}
+          />
+          {nextLevelInfo && (
+            <View style={styles.nextLevelInfo}>
+              <Text style={styles.nextLevelText}>
+                다음 레벨까지: {nextLevelInfo.requiredPerfects - avatarProgress.totalPerfects}회 Perfect 남음
+              </Text>
+            </View>
+          )}
+        </View>
+
         {/* 현재 설정 표시 */}
         <View style={styles.currentSettings}>
           <Text style={styles.settingsText}>
@@ -549,6 +588,16 @@ export default function LearnIndex() {
           canContinue={currentSet < MAX_SETS}
           currentSet={currentSet}
           maxSets={MAX_SETS}
+          totalPerfects={avatarProgress.totalPerfects}
+        />
+      )}
+
+      {/* 🎊 레벨업 모달 */}
+      {newLevelInfo && (
+        <LevelUpModal
+          visible={isLeveledUp}
+          newLevel={newLevelInfo}
+          onClose={closeLevelUpModal}
         />
       )}
     </View>
@@ -730,6 +779,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
+  },
+  avatarSection: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  nextLevelInfo: {
+    marginTop: 15,
+    backgroundColor: '#F0F8FF',
+    padding: 10,
+    borderRadius: 8,
+    width: '100%',
+  },
+  nextLevelText: {
+    fontSize: 13,
+    color: '#4A90E2',
+    textAlign: 'center',
+    fontWeight: '600',
   },
   
   // 게임 화면 스타일
