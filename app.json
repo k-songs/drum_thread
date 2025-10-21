@@ -14,7 +14,7 @@
       },
       "compileSdkVersion": 36,
       "targetSdkVersion": 36,
-      "minSdkVersion": 21,
+      "minSdkVersion": 24,
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",

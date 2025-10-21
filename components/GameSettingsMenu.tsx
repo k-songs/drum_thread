@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { DifficultyLevel, QuestionCount, QUESTION_COUNT_OPTIONS } from '@/types/game';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Image } from 'react-native';
+import Slider from '@react-native-community/slider';
+import { DifficultyLevel, QuestionCount, QUESTION_COUNT_OPTIONS, SoundSpeed, SOUND_SPEED_CONFIG } from '@/types/game';
 
 interface GameSettingsMenuProps {
   visible: boolean;
@@ -8,8 +9,9 @@ interface GameSettingsMenuProps {
   currentSettings: {
     questionCount: QuestionCount;
     difficulty: DifficultyLevel;
+    soundSpeed: SoundSpeed;
   };
-  onSettingsChange: (settings: { questionCount: QuestionCount; difficulty: DifficultyLevel }) => void;
+  onSettingsChange: (settings: { questionCount: QuestionCount; difficulty: DifficultyLevel; soundSpeed: SoundSpeed }) => void;
 }
 
 export const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
@@ -20,11 +22,13 @@ export const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
 }) => {
   const [tempQuestionCount, setTempQuestionCount] = React.useState(currentSettings.questionCount);
   const [tempDifficulty, setTempDifficulty] = React.useState(currentSettings.difficulty);
+  const [tempSoundSpeed, setTempSoundSpeed] = React.useState(currentSettings.soundSpeed);
 
   const handleSave = () => {
     onSettingsChange({
       questionCount: tempQuestionCount,
       difficulty: tempDifficulty,
+      soundSpeed: tempSoundSpeed,
     });
     onClose();
   };
@@ -43,6 +47,22 @@ export const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
       case 'normal': return '적당한 난이도입니다';
       case 'hard': return '까다로운 판정 + 백색소음 (고급)';
     }
+  };
+
+  const getSpeedLabel = (speed: SoundSpeed) => {
+    const labels = {
+      veryslow: '🐢 초보 탐험가',
+      slow: '🚶 느긋한 방랑자',
+      normal: '🏃 민첩한 사냥꾼',
+      fast: '🚗 진지한 탐사대',
+      veryfast: '🚀 광속 질주자',
+    };
+    return labels[speed];
+  };
+
+  const getSpeedIndex = (speed: SoundSpeed) => {
+    const speedOptions: SoundSpeed[] = ['veryslow', 'slow', 'normal', 'fast', 'veryfast'];
+    return speedOptions.indexOf(speed);
   };
 
   return (
@@ -120,6 +140,50 @@ export const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
                     </Text>
                   </TouchableOpacity>
                 ))}
+              </View>
+            </View>
+
+            {/* 소리 속도 설정 */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🧭 탐험가 속도 설정</Text>
+              <Text style={styles.sectionDescription}>
+                소리가 나오는 속도를 조절하세요
+              </Text>
+
+
+              <View style={styles.explorerContainer}>
+                <Text style={styles.speedLabel}>
+                  {getSpeedLabel(tempSoundSpeed)}
+                </Text>
+
+                <View style={styles.sliderBackground}>
+                  <Slider
+                    style={styles.slider}
+                    minimumValue={0}
+                    maximumValue={4}
+                    step={1}
+                    value={getSpeedIndex(tempSoundSpeed)}
+                    onValueChange={(value: number) => {
+                      const speedOptions: SoundSpeed[] = ['veryslow', 'slow', 'normal', 'fast', 'veryfast'];
+                      setTempSoundSpeed(speedOptions[value]);
+                    }}
+                    minimumTrackTintColor="#8B4513"
+                    maximumTrackTintColor="#D2B48C"
+              
+                    
+                  />
+
+                  {/* 숫자 마커 */}
+                  <View style={styles.markers}>
+                    {[1, 2, 3, 4, 5].map(num => (
+                      <Text key={num} style={styles.markerText}>
+                        {num}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+
+             
               </View>
             </View>
 
@@ -254,6 +318,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  explorerContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  speedLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#5C3A21',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  speedDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  sliderBackground: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#DEB887',
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  markers: {
+    position: 'absolute',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 15,
+    bottom: -20,
+  },
+  markerText: {
+    fontSize: 12,
+    color: '#8B4513',
+    fontWeight: '600',
+  },
   infoBox: {
     backgroundColor: '#F0F8FF',
     padding: 15,
@@ -305,4 +411,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 

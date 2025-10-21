@@ -1,25 +1,28 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useState, useRef, useEffect } from "react";
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
   withSpring,
   withSequence,
-  Easing 
+  Easing
 } from "react-native-reanimated";
-import { BurstAnimation, JudgementAnimation } from '@/components/animations';
+import { BurstAnimation, JudgementAnimation, ParticleExplosion } from '@/components/animations';
 import { GameSettingsMenu } from "@/components/GameSettingsMenu";
 import { GameResultModal } from "@/components/GameResultModal";
 import { AvatarDisplay } from "@/components/AvatarDisplay";
 import { LevelUpModal } from "@/components/LevelUpModal";
-import { 
-  DifficultyLevel, 
-  QuestionCount, 
-  GameResult, 
-  DIFFICULTY_SETTINGS, 
-  MAX_SETS 
+import {
+  DifficultyLevel,
+  QuestionCount,
+  GameResult,
+  DIFFICULTY_SETTINGS,
+  MAX_SETS,
+  SoundSpeed,
+  SOUND_SPEED_CONFIG
 } from "@/types/game";
 import { useAvatarProgress } from "@/hooks/useAvatarProgress";
 
@@ -28,6 +31,7 @@ const SOUND_STRINGS = ["삐", "땡", "띵", "뚝", "탁"];
 
 export default function LearnIndex() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   
   // 🎭 아바타 시스템
   const {
@@ -42,9 +46,10 @@ export default function LearnIndex() {
   } = useAvatarProgress();
   
   // 🎮 게임 설정
-  const [settings, setSettings] = useState<{ questionCount: QuestionCount; difficulty: DifficultyLevel }>({
+  const [settings, setSettings] = useState<{ questionCount: QuestionCount; difficulty: DifficultyLevel; soundSpeed: SoundSpeed }>({
     questionCount: 10,
     difficulty: 'normal',
+    soundSpeed: 'normal', // 기본값 유지
   });
   const [showSettings, setShowSettings] = useState(false);
   
@@ -57,6 +62,7 @@ export default function LearnIndex() {
   const [maxCombo, setMaxCombo] = useState(0);
   const [judgement, setJudgement] = useState<"Perfect" | "Good" | "Miss" | null>(null);
   const [showBurst, setShowBurst] = useState(false);
+  const [showParticleExplosion, setShowParticleExplosion] = useState(false);
   
   // 📊 문항 추적
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -153,7 +159,8 @@ export default function LearnIndex() {
     let timeoutId: any;
 
     const scheduleNextSound = () => {
-      const randomDelay = 2000 + Math.random() * 2000; // 2~4초 간격
+      const speedConfig = SOUND_SPEED_CONFIG[settings.soundSpeed];
+      const randomDelay = speedConfig.minInterval + Math.random() * (speedConfig.maxInterval - speedConfig.minInterval);
       
       timeoutId = setTimeout(() => {
         const randomSound = SOUND_STRINGS[Math.floor(Math.random() * SOUND_STRINGS.length)];
@@ -173,7 +180,7 @@ export default function LearnIndex() {
       }, randomDelay);
     };
 
-    // 첫 소리는 1초 후 시작
+    // 첫 소리는 설정된 속도의 최소 시간 후 시작
     timeoutId = setTimeout(() => {
       const randomSound = SOUND_STRINGS[Math.floor(Math.random() * SOUND_STRINGS.length)];
       const timestamp = Date.now();
@@ -234,6 +241,7 @@ export default function LearnIndex() {
       }
 
       // 불꽃 애니메이션 실행
+      triggerParticleExplosion();
       triggerBurstAnimation();
       triggerJudgementAnimation();
       
@@ -279,6 +287,14 @@ export default function LearnIndex() {
         finishSet();
       }, 1500); // 마지막 판정 애니메이션 후 결과 표시
     }
+  };
+
+  // 🎆 입자 폭발 애니메이션
+  const triggerParticleExplosion = () => {
+    setShowParticleExplosion(true);
+    setTimeout(() => {
+      setShowParticleExplosion(false);
+    }, 1200);
   };
 
   // 🎨 불꽃 애니메이션 (react-native-reanimated 사용)
@@ -392,6 +408,16 @@ export default function LearnIndex() {
               <Text style={styles.soundText}>{currentSound}</Text>
             )}
             
+            {/* 🎆 입자 폭발 애니메이션 */}
+            <ParticleExplosion
+              show={showParticleExplosion}
+              particleCount={8}
+              colors={['#FFD700', '#FF6B6B', '#4A90E2', '#9B59B6', '#E67E22', '#2ECC71', '#F39C12']}
+              duration={1200}
+              centerX={0}
+              centerY={0}
+            />
+
             {/* 불꽃 애니메이션 (react-native-reanimated) */}
             {showBurst && (
               <Animated.View
@@ -438,18 +464,29 @@ export default function LearnIndex() {
   }
 
   return (
+    <ScrollView style={styles.container}>
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* 햄버거 메뉴 버튼 */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.menuButton}
         onPress={() => setShowSettings(true)}
       >
         <Text style={styles.menuIcon}>☰</Text>
       </TouchableOpacity>
 
+
       <ScrollView style={styles.content}>
         <Text style={styles.title}>청능 훈련 - 1단계</Text>
-        <Text style={styles.subtitle}>소리 인지 훈련 (Detection)</Text>
+        <Text style={styles.subtitle}>소리 훈련</Text>
+
+        {/* 현재 설정 표시 */}
+        <View style={styles.currentSettings}>
+          <Text style={styles.settingsText}>
+            📝 문항 수: {settings.questionCount}개 |
+            🎯 난이도: {settings.difficulty === 'easy' ? '쉬움' : settings.difficulty === 'normal' ? '보통' : '어려움'} |
+            🧭 속도: {settings.soundSpeed === 'veryslow' ? '매우 느림' : settings.soundSpeed === 'slow' ? '느림' : settings.soundSpeed === 'normal' ? '보통' : settings.soundSpeed === 'fast' ? '빠름' : '매우 빠름'}
+          </Text>
+        </View>
         
         {/* 🎭 아바타 표시 */}
         <View style={styles.avatarSection}>
@@ -468,14 +505,6 @@ export default function LearnIndex() {
           )}
         </View>
 
-        {/* 현재 설정 표시 */}
-        <View style={styles.currentSettings}>
-          <Text style={styles.settingsText}>
-            📝 문항 수: {settings.questionCount}개 | 
-            🎯 난이도: {settings.difficulty === 'easy' ? '쉬움' : settings.difficulty === 'normal' ? '보통' : '어려움'}
-          </Text>
-        </View>
-
         <Text style={styles.description}>
           소리가 있는지 없는지를 감지하는 훈련입니다.{"\n"}
           가장 기본적인 소리 자극에 반응하는 능력을 키워보세요.
@@ -487,37 +516,15 @@ export default function LearnIndex() {
           
           <View style={styles.tableRow}>
             <View style={styles.tableCell}>
-              <Text style={styles.tableCellTitle}>🎮 게임화</Text>
-              <Text style={styles.tableCellDesc}>
-                미션, 랭크, 보상 시스템을 통해 훈련을 도전 과제로 만듭니다.
-              </Text>
-              <Text style={styles.tableCellPurpose}>
-                → 동기 부여 및 즉각적인 성취감 제공
-              </Text>
+            
             </View>
           </View>
 
-          <View style={styles.tableRow}>
-            <View style={styles.tableCell}>
-              <Text style={styles.tableCellTitle}>✨ 애니메이션화</Text>
-              <Text style={styles.tableCellDesc}>
-                모든 소리 인지 및 성공에 시각적/청각적 피드백을 제공합니다.
-              </Text>
-              <Text style={styles.tableCellPurpose}>
-                → 명확한 인지 및 몰입도 향상
-              </Text>
-            </View>
-          </View>
+         
 
           <View style={styles.tableRow}>
             <View style={styles.tableCell}>
-              <Text style={styles.tableCellTitle}>📈 성장 지속화</Text>
-              <Text style={styles.tableCellDesc}>
-                개인화된 성장 지표(아바타 진화)를 통해 장기적인 목표를 제시합니다.
-              </Text>
-              <Text style={styles.tableCellPurpose}>
-                → 장기간 이탈 방지 및 자기 효능감 증진
-              </Text>
+             
             </View>
           </View>
         </View>
@@ -556,27 +563,36 @@ export default function LearnIndex() {
 
         {/* 시작 버튼 */}
         <TouchableOpacity style={styles.startButton} onPress={startGame}>
-          <Text style={styles.startButtonText}>🎮 훈련 시작하기</Text>
+          <Text style={styles.startButtonText}>🎮 1단계 훈련 시작하기</Text>
+        </TouchableOpacity>
+
+        {/* 2단계 훈련 버튼 */}
+        <TouchableOpacity
+          style={[styles.startButton, styles.stage2Button]}
+          onPress={() => router.push('/learn/discrimination')}
+        >
+          <Text style={styles.startButtonText}>🎵 2단계: 소리 분별 훈련</Text>
+        </TouchableOpacity>
+
+        {/* 3단계 훈련 버튼 */}
+        <TouchableOpacity
+          style={[styles.startButton, styles.stage3Button]}
+          onPress={() => router.push('/learn/identification')}
+        >
+          <Text style={styles.startButtonText}>🔤 3단계: 소리 식별 훈련</Text>
         </TouchableOpacity>
 
         {/* 안내 메시지 */}
-        <View style={styles.infoCard}>
+      {/*   <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>💡 안내</Text>
           <Text style={styles.infoText}>
             • {settings.questionCount}문항 완료 후 결과를 확인할 수 있습니다{'\n'}
             • 최대 {MAX_SETS}세트({MAX_SETS * settings.questionCount}문항)까지 연속으로 진행 가능합니다{'\n'}
             • 상단 메뉴(☰)에서 문항 수와 난이도를 조절할 수 있습니다
           </Text>
-        </View>
+        </View> */}
       </ScrollView>
 
-      {/* 설정 모달 */}
-      <GameSettingsMenu
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        currentSettings={settings}
-        onSettingsChange={setSettings}
-      />
 
       {/* 결과 모달 */}
       {gameResult && (
@@ -592,6 +608,14 @@ export default function LearnIndex() {
         />
       )}
 
+      {/* 설정 모달 */}
+      <GameSettingsMenu
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        currentSettings={settings}
+        onSettingsChange={setSettings}
+      />
+
       {/* 🎊 레벨업 모달 */}
       {newLevelInfo && (
         <LevelUpModal
@@ -601,6 +625,7 @@ export default function LearnIndex() {
         />
       )}
     </View>
+    </ScrollView>
   );
 }
 
@@ -737,6 +762,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 30,
     elevation: 3,
+  },
+  stage2Button: {
+    backgroundColor: "#9B59B6",
+    marginBottom: 20,
+  },
+  stage3Button: {
+    backgroundColor: "#E67E22",
+    marginBottom: 20,
   },
   startButtonText: {
     fontSize: 20,
